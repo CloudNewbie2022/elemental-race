@@ -206,19 +206,19 @@
   <div class="podium">
     <div class="podium-step first-place">
       <div class="podium-rank">1st</div>
-      <img class="podium-avatar" id="first-avatar" src="https://via.placeholder.com/60" alt="1st place">
+      <img class="podium-avatar" id="first-avatar" src="<img src="https://api.dicebear.com/7.x/bottts/svg?seed=Player1" width="60" height="60">" alt="1st place">
       <div class="podium-name" id="first-name">-</div>
       <div class="podium-bar"></div>
     </div>
     <div class="podium-step second-place">
       <div class="podium-rank">2nd</div>
-      <img class="podium-avatar" id="second-avatar" src="https://via.placeholder.com/60" alt="2nd place">
+      <img class="podium-avatar" id="second-avatar" src="<img src="https://api.dicebear.com/7.x/bottts/svg?seed=Player1" width="60" height="60">" alt="2nd place">
       <div class="podium-name" id="second-name">-</div>
       <div class="podium-bar"></div>
     </div>
     <div class="podium-step third-place">
       <div class="podium-rank">3rd</div>
-      <img class="podium-avatar" id="third-avatar" src="https://via.placeholder.com/60" alt="3rd place">
+      <img class="podium-avatar" id="third-avatar" src="<img src="https://api.dicebear.com/7.x/bottts/svg?seed=Player1" width="60" height="60">" alt="3rd place">
       <div class="podium-name" id="third-name">-</div>
       <div class="podium-bar"></div>
     </div>
@@ -461,17 +461,17 @@
       if (currentLeaderboard.length > 0) {
         const first = currentLeaderboard[0];
         document.getElementById('first-name').textContent = first.profile.displayName;
-        document.getElementById('first-avatar').src = first.profile.avatarUrl || 'https://via.placeholder.com/60';
+        document.getElementById('first-avatar').src = first.profile.avatarUrl || '<img src="https://api.dicebear.com/7.x/bottts/svg?seed=Player1" width="60" height="60">';
       }
       if (currentLeaderboard.length > 1) {
         const second = currentLeaderboard[1];
         document.getElementById('second-name').textContent = second.profile.displayName;
-        document.getElementById('second-avatar').src = second.profile.avatarUrl || 'https://via.placeholder.com/60';
+        document.getElementById('second-avatar').src = second.profile.avatarUrl || '<img src="https://api.dicebear.com/7.x/bottts/svg?seed=Player1" width="60" height="60">';
       }
       if (currentLeaderboard.length > 2) {
         const third = currentLeaderboard[2];
         document.getElementById('third-name').textContent = third.profile.displayName;
-        document.getElementById('third-avatar').src = third.profile.avatarUrl || 'https://via.placeholder.com/60';
+        document.getElementById('third-avatar').src = third.profile.avatarUrl || '<img src="https://api.dicebear.com/7.x/bottts/svg?seed=Player1" width="60" height="60">';
       }
     }
     
@@ -504,7 +504,7 @@
         listItem.innerHTML = `
           <div class="player-info">
             <div class="rank">${player.position}</div>
-            <img class="avatar" src="${player.profile.avatarUrl || 'https://via.placeholder.com/40'}" alt="${player.profile.displayName}">
+            <img class="avatar" src="${player.profile.avatarUrl || '<img src="https://api.dicebear.com/7.x/bottts/svg?seed=Player1" width="60" height="60">'}" alt="${player.profile.displayName}">
             <div>
               <span class="name">${player.profile.displayName}</span>
               ${getPositionChangeHtml(positionChange)}
