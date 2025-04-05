@@ -389,19 +389,10 @@
     // Use a CORS proxy
     const PROXY_URL = 'https://cors-anywhere.herokuapp.com/';
     const API_URL = PROXY_URL + 'https://api-preview.apps.angrydynomiteslab.com/graphql';
-    
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest' // Required by some CORS proxies
-      },
-      body: JSON.stringify({
-        query: GRAPHQL_QUERY,
-        variables: { id: MASTERPIECE_ID }
-      })
-    });
+
+  async function fetchLeaderboard() {
+  return await init(); // Now just wraps the new init()
+}
 
     // Rest of your code remains the same...
     if (!response.ok) {
