@@ -389,7 +389,29 @@
     // Use a CORS proxy
     const PROXY_URL = 'https://cors-anywhere.herokuapp.com/';
     const API_URL = PROXY_URL + 'https://api-preview.apps.angrydynomiteslab.com/graphql';
+async function init() {
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {  'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest' // Required by some CORS proxies
+               },
+      body: JSON.stringify({ query: GRAPHQL_QUERY, variables: { id: MASTERPIECE_ID } })
+    });
 
+    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+    
+    const result = await response.json();
+    if (result.errors) throw new Error(result.errors[0].message);
+    
+    return result.data.masterpiece.leaderboard;
+  } catch (error) {
+    console.error("API Error:", error);
+    // Optional: return mock data here if available
+    return null;
+  }
+}
   async function fetchLeaderboard() {
   return await init(); // Now just wraps the new init()
 }
