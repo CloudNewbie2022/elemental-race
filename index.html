@@ -239,28 +239,28 @@
 </body>
 </html>
 <script>
-  // Configuration // Replace with actual API endpoint
+// Configuration
+  const API_URL = 'https://ominous-space-orbit-9rgg96g4p69fxrvp-8080.app.github.dev/graphql'; // your real proxy endpoint
   const REFRESH_INTERVAL = 30000; // 30 seconds
   const MASTERPIECE_ID = 112; // Replace with actual masterpiece ID
   const USER_ID = "lFMi7D6YWHYL78J8EeYGmb7mAPv2"; // Your user ID
-  
+
   const GRAPHQL_QUERY = `
-    query Masterpiece($id: ID) {
-      masterpiece(id: $id) {
-        leaderboard {
-          position
-          masterpiecePoints
-          profile {
-            uid
-            walletAddress
-            avatarUrl
-            displayName
-          }
+  query Masterpiece($id: ID) {
+    masterpiece(id: $id) {
+      leaderboard {
+        position
+        masterpiecePoints
+        profile {
+          uid
+          walletAddress
+          avatarUrl
+          displayName
         }
       }
     }
-  `;
-  
+  }
+`;  
   // State
   let currentLeaderboard = [];
   let previousLeaderboard = [];
@@ -289,10 +289,10 @@
   async function fetchLeaderboard() {
     try {
       showStatus('Loading leaderboard data...');
-      
-      const PROXY_URL = 'http://localhost:8080/graphql/';
-      const API_URL = PROXY_URL + API_ENDPOINT;
-  
+    
+      const API_URL = 'https://ominous-space-orbit-9rgg96g4p69fxrvp-8080.app.github.dev/graphql';
+
+
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
@@ -317,6 +317,7 @@
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       showStatus('Error loading leaderboard: ' + error.message, true);
+      
       const mockData = generateMockData();
       processNewData(mockData);
       return mockData;
