@@ -21,7 +21,7 @@ async function fetchLeaderboard(userAddress) {
     console.log("🔍 Fetching real data from proxy...");
     // Fetch leaderboard data from the GraphQL API
     // Replace with your actual GraphQL API endpoint
-    const response = await fetch('http://localhost:8080/graphql', {
+    const response = await fetch('https://ominous-space-orbit-9rgg96g4p69fxrvp-8080.app.github.dev/graphql', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
