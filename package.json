@@ -1,0 +1,17 @@
+{
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "scripts": {
+  "start": "concurrently npm run start:frontend npm run start:proxy",
+"start:frontend": "live-server ./",
+"start:proxy": "node ../proxy/server.js"
+},
+  "proxy": {
+    "target": "http://localhost:3000",
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api": ""
+    }
+  }
+}
