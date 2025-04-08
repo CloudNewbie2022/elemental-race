@@ -19,6 +19,8 @@ async function initApp() {
 async function fetchLeaderboard(userAddress) {
   try {
     console.log("🔍 Fetching real data from proxy...");
+    // Fetch leaderboard data from the GraphQL API
+    // Replace with your actual GraphQL API endpoint
     const response = await fetch('http://localhost:8080/graphql', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
