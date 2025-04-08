@@ -4,8 +4,10 @@
     "description": "Proxy server for Elemental Race leaderboard",
     "main": "server.js",
     "scripts": {
-      "start": "node server.js",
-      "dev": "nodemon server.js"
+      "dev": "nodemon proxy/server.js",
+      "start": "concurrently \"npm run start:frontend\" \"npm run start:proxy\"",
+      "start:frontend": "live-server --port=5500 --host=127.0.0.1 ./",
+      "start:proxy": "node proxy/server.js"
     },
     "dependencies": {
       "cors": "^2.8.5",
