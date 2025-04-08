@@ -1,12 +1,13 @@
 {
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "live-server": "^1.2.2"
   },
   "scripts": {
-  "start": "concurrently \"npm run start:frontend\" \"npm run start:proxy\"",
-  "start:frontend": "live-server ./",
-  "start:proxy": "node ../proxy/server.js"
-},
+    "start": "concurrently \"npm run start:frontend\" \"npm run start:proxy\"",
+    "start:frontend": "live-server ./",
+    "start:proxy": "node ../proxy/server.js"
+  },
   "proxy": {
     "target": "http://localhost:3000",
     "changeOrigin": true,
