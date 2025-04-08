@@ -291,7 +291,7 @@
     try {
       showStatus('Loading leaderboard data...');
       
-      const PROXY_URL = 'https://cors-anywhere.herokuapp.com/';
+      const PROXY_URL = 'http://localhost:8080/graphql/';
       const API_URL = PROXY_URL + API_ENDPOINT;
   
       const response = await fetch(API_URL, {
