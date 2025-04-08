@@ -239,28 +239,29 @@
 </body>
 </html>
 <script>
-// Configuration
-  const API_URL = 'https://ominous-space-orbit-9rgg96g4p69fxrvp-8080.app.github.dev/graphql'; // your real proxy endpoint
+  // Configuration
+  const API_URL = 'http://localhost:8080/graphql'; // local proxy endpoint
   const REFRESH_INTERVAL = 30000; // 30 seconds
-  const MASTERPIECE_ID = 112; // Replace with actual masterpiece ID
-  const USER_ID = "lFMi7D6YWHYL78J8EeYGmb7mAPv2"; // Your user ID
-
+  const MASTERPIECE_ID = 112;
+  const USER_ID = "lFMi7D6YWHYL78J8EeYGmb7mAPv2";
+  
   const GRAPHQL_QUERY = `
-  query Masterpiece($id: ID) {
-    masterpiece(id: $id) {
-      leaderboard {
-        position
-        masterpiecePoints
-        profile {
-          uid
-          walletAddress
-          avatarUrl
-          displayName
+    query Masterpiece($id: ID) {
+      masterpiece(id: $id) {
+        leaderboard {
+          position
+          masterpiecePoints
+          profile {
+            uid
+            walletAddress
+            avatarUrl
+            displayName
+          }
         }
       }
     }
-  }
-`;  
+  `;
+  
   // State
   let currentLeaderboard = [];
   let previousLeaderboard = [];
@@ -289,10 +290,7 @@
   async function fetchLeaderboard() {
     try {
       showStatus('Loading leaderboard data...');
-    
-      const API_URL = 'https://ominous-space-orbit-9rgg96g4p69fxrvp-8080.app.github.dev/graphql';
-
-
+  
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
@@ -308,16 +306,23 @@
   
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const result = await response.json();
-      if (result.errors) throw new Error(result.errors.map(e => e.message).join(', '));
+  
+      console.log("💾 masterpiece:", result?.data?.masterpiece);
+  
+      if (!result.data || !result.data.masterpiece) {
+        showStatus("⚠️ No masterpiece data available");
+        return;
+      }
   
       const leaderboardData = result.data.masterpiece.leaderboard;
       processNewData(leaderboardData);
       showStatus('Leaderboard updated at ' + new Date().toLocaleTimeString());
       return leaderboardData;
+  
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       showStatus('Error loading leaderboard: ' + error.message, true);
-      
+  
       const mockData = generateMockData();
       processNewData(mockData);
       return mockData;
