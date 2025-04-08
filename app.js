@@ -18,6 +18,7 @@ async function initApp() {
 
 async function fetchLeaderboard(userAddress) {
   try {
+    console.log("🔍 Fetching real data from proxy...");
     const response = await fetch('http://localhost:8080/graphql', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
