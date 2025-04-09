@@ -379,12 +379,12 @@
 </body>
 </html>
 <script>
-  // Configuration
-  const API_URL = 'https://ab782caa-f065-4ff3-bb94-3d5019d411fd-00-1he2khpvaeygc.janeway.replit.dev/graphql'; // local proxy endpoint
-  const REFRESH_INTERVAL = 30000; // 30 seconds
+  const API_URL = 'https://ab782caa-f065-4ff3-bb94-3d5019d411fd-00-1he2khpvaeygc.janeway.replit.dev/graphql';
+  const REFRESH_INTERVAL = 30000;
   const MASTERPIECE_ID = 112;
   const USER_ID = "lFMi7D6YWHYL78J8EeYGmb7mAPv2";
-  
+  const fakeToken = 'Bearer Wallet 0x123456789abcdef'; // Use a real token if needed
+
   const GRAPHQL_QUERY = `
     query Masterpiece($id: ID) {
       masterpiece(id: $id) {
@@ -401,215 +401,134 @@
       }
     }
   `;
-  
-  // State
+
   let currentLeaderboard = [];
   let previousLeaderboard = [];
   let autoRefreshInterval = null;
-  
-  // DOM Elements
+  let chartInstance = null;
+
   const leaderboardList = document.getElementById('leaderboard');
   const refreshBtn = document.getElementById('refresh-btn');
   const autoRefreshBtn = document.getElementById('auto-refresh-btn');
   const stopAutoRefreshBtn = document.getElementById('stop-auto-refresh-btn');
   const statusElement = document.getElementById('status');
-  
-  // Initialize
+
   document.addEventListener('DOMContentLoaded', () => {
     fetchLeaderboard();
     refreshBtn.addEventListener('click', fetchLeaderboard);
     autoRefreshBtn.addEventListener('click', startAutoRefresh);
     stopAutoRefreshBtn.addEventListener('click', stopAutoRefresh);
   });
-  
+
   function showStatus(message, isError = false) {
     statusElement.textContent = message;
     statusElement.style.color = isError ? '#e74c3c' : '#bdc3c7';
   }
 
-
-
-
-
-
-
   async function fetchLeaderboard() {
-  try {
-    showStatus('Loading leaderboard data...');
+    try {
+      showStatus('Loading leaderboard data...');
 
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer test-token'
-      },
-      body: JSON.stringify({
-        query: GRAPHQL_QUERY,
-        variables: { id: MASTERPIECE_ID }
-      })
-    });
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': fakeToken
+        },
+        body: JSON.stringify({
+          query: GRAPHQL_QUERY,
+          variables: { id: MASTERPIECE_ID }
+        })
+      });
 
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-    const result = await response.json();
-    console.log("💾 masterpiece:", result?.data?.masterpiece);
+      const result = await response.json();
+      console.log("🔍 Raw result:", result);
 
-    if (!result.data || !result.data.masterpiece) {
-      showStatus("⚠️ No masterpiece data available");
-      return;
+      const masterpiece = result?.data?.masterpiece;
+      if (!masterpiece || !masterpiece.leaderboard) {
+        throw new Error('No masterpiece data');
+      }
+
+      const leaderboardData = masterpiece.leaderboard;
+      processNewData(leaderboardData);
+      renderChart(leaderboardData);
+      showStatus('✅ Leaderboard updated at ' + new Date().toLocaleTimeString());
+      return leaderboardData;
+
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      showStatus("❌ Error loading leaderboard: " + error.message, true);
+      const mockData = generateMockData();
+      processNewData(mockData);
+      renderChart(mockData);
+      return mockData;
     }
-
-    const leaderboardData = result.data.masterpiece.leaderboard;
-    renderChart(leaderboardData); // 👈 This replaces your visual
-    showStatus('Leaderboard updated at ' + new Date().toLocaleTimeString());
-
-    return leaderboardData;
-  } catch (error) {
-    console.error("Error fetching leaderboard:", error);
-    showStatus("❌ Error loading leaderboard: " + error.message, true);
-
-    const mockData = generateMockData();
-    renderChart(mockData); // fallback
-    return mockData;
   }
-}
 
+  function renderChart(data) {
+    const canvas = document.getElementById('leaderboardChart');
+    const ctx = canvas.getContext('2d');
 
-let chartInstance = null;
+    const labels = data.map(player => player.profile.displayName || player.profile.walletAddress.slice(0, 6));
+    const scores = data.map(player => player.masterpiecePoints);
 
+    if (chartInstance) chartInstance.destroy();
 
-function renderChart(data) {
-  const ctx = document.getElementById('leaderboardChart').getContext('2d');
-
-  const labels = data.map(player => player.profile.displayName || player.profile.walletAddress.slice(0, 6));
-  const scores = data.map(player => player.masterpiecePoints);
-
-  if (chartInstance) chartInstance.destroy(); // replace chart if it exists
-
-  chartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: '🔥 Masterpiece Points',
-        data: scores,
-        backgroundColor: data.map((_, i) => `hsl(${i * 36}, 70%, 60%)`), // colorful bars
-        borderColor: 'rgba(0,0,0,0.1)',
-        borderWidth: 1,
-      }]
-    },
-    options: {
-      responsive: false,
-      maintainAspectRatio: false,
-      indexAxis: 'y', // 👈 Horizontal bars
-      animation: {
-        duration: 800,
+    chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: '🔥 Masterpiece Points',
+          data: scores,
+          backgroundColor: data.map((_, i) => `hsl(${i * 36}, 70%, 60%)`),
+          borderColor: 'rgba(0,0,0,0.1)',
+          borderWidth: 1,
+        }]
       },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (tooltipItem) => `${scores[tooltipItem.dataIndex]} pts`
+      options: {
+        responsive: false,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        animation: { duration: 800 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.raw.toLocaleString()} pts`
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            title: { display: true, text: 'Points' }
+          },
+          y: {
+            title: { display: true, text: 'Player' }
           }
         }
-      },
-      scales: {
-        x: {
-          beginAtZero: true,
-          title: { display: true, text: 'Points' }
-        },
-        y: {
-          title: { display: true, text: 'Player' }
-        }
       }
-    }
-  });
-}
-
-function renderLeaderboardChart(data) {
-  const ctx = document.getElementById('leaderboardCanvas').getContext('2d');
-
-  const labels = data.map(p => p.profile.displayName || p.profile.walletAddress.slice(0, 6));
-  const values = data.map(p => p.masterpiecePoints);
-
-  const backgroundImages = data.map((_, i) => {
-    const img = new Image();
-    img.src = `/path/to/your/generative-art-${i % 3 + 1}.gif`; // Swap this with your loop art
-    return img;
-  });
-
-  // Use a plugin to render images instead of bars
-  const imageBarPlugin = {
-    id: 'imageBarPlugin',
-    afterDatasetDraw(chart) {
-      const {ctx, chartArea: {top, left}, scales: {x, y}} = chart;
-      chart.getDatasetMeta(0).data.forEach((bar, index) => {
-        const img = backgroundImages[index];
-        const barWidth = bar.width;
-        const barHeight = bar.height;
-        ctx.drawImage(img, bar.x, bar.y, barWidth, barHeight);
-      });
-    }
-  };
-  
-  renderLeaderboardChart(currentLeaderboard);
-
-  new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Masterpiece Points',
-        data: values,
-        backgroundColor: 'rgba(0,0,0,0)', // transparent to layer image
-        borderColor: 'rgba(255,255,255,0.2)',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      animation: {
-        duration: 1000
-      },
-      plugins: {
-        legend: { display: false }
-      },
-      scales: {
-        x: {
-          beginAtZero: true,
-          title: { display: true, text: 'Points', color: 'white' },
-          ticks: { color: 'white' }
-        },
-        y: {
-          title: { display: true, text: 'Player', color: 'white' },
-          ticks: { color: 'white' }
-        }
-      }
-    },
-    plugins: [imageBarPlugin]
-  });
-}
-
-document.getElementById('updateChartSize').addEventListener('click', () => {
-  const width = parseInt(document.getElementById('chartWidth').value, 10);
-  const height = parseInt(document.getElementById('chartHeight').value, 10);
-
-  const canvas = document.getElementById('leaderboardChart');
-  canvas.width = width;
-  canvas.height = height;
-
-  // Re-render chart with current data (you can store it in a variable)
-  if (currentLeaderboard.length > 0) {
-    renderChart(currentLeaderboard);
-  } else {
-    showStatus("⚠️ No leaderboard data loaded yet");
+    });
   }
-});
 
+  document.getElementById('updateChartSize').addEventListener('click', () => {
+    const width = parseInt(document.getElementById('chartWidth').value, 10);
+    const height = parseInt(document.getElementById('chartHeight').value, 10);
 
-// 🚀 Run it on page load
-fetchLeaderboard();
+    const canvas = document.getElementById('leaderboardChart');
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+
+    if (currentLeaderboard.length > 0) {
+      renderChart(currentLeaderboard);
+    } else {
+      showStatus("⚠️ No leaderboard data loaded yet");
+    }
+  });
 
   function processNewData(newData) {
     previousLeaderboard = [...currentLeaderboard];
@@ -617,45 +536,38 @@ fetchLeaderboard();
     updatePodium();
     updateLeaderboardList();
   }
-  
+
   function updatePodium() {
-    if (currentLeaderboard.length > 0) {
-      const first = currentLeaderboard[0];
+    const [first, second, third] = currentLeaderboard;
+    if (first) {
       document.getElementById('first-name').textContent = first.profile.displayName;
-      document.getElementById('first-avatar').src = first.profile.avatarUrl || 
-        `https://api.dicebear.com/7.x/bottts/svg?seed=Player1`;
+      document.getElementById('first-avatar').src = first.profile.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=Player1`;
     }
-    if (currentLeaderboard.length > 1) {
-      const second = currentLeaderboard[1];
+    if (second) {
       document.getElementById('second-name').textContent = second.profile.displayName;
-      document.getElementById('second-avatar').src = second.profile.avatarUrl || 
-        `https://api.dicebear.com/7.x/bottts/svg?seed=Player2`;
+      document.getElementById('second-avatar').src = second.profile.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=Player2`;
     }
-    if (currentLeaderboard.length > 2) {
-      const third = currentLeaderboard[2];
+    if (third) {
       document.getElementById('third-name').textContent = third.profile.displayName;
-      document.getElementById('third-avatar').src = third.profile.avatarUrl || 
-        `https://api.dicebear.com/7.x/bottts/svg?seed=Player3`;
+      document.getElementById('third-avatar').src = third.profile.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=Player3`;
     }
   }
-  
+
   function updateLeaderboardList() {
     leaderboardList.innerHTML = '';
-  
     if (!currentLeaderboard.length) {
       leaderboardList.innerHTML = '<li class="loading">No leaderboard data available</li>';
       return;
     }
-  
+
     currentLeaderboard.forEach((player, index) => {
       const listItem = document.createElement('li');
       listItem.className = 'player';
-  
+
       const prevPosition = getPreviousPosition(player.profile.uid);
       const positionChange = prevPosition !== null ? prevPosition - player.position : null;
-  
       if (Math.abs(positionChange) >= 3) listItem.classList.add('highlight');
-  
+
       listItem.innerHTML = `
         <div class="player-info">
           <div class="rank">${player.position}</div>
@@ -668,65 +580,38 @@ fetchLeaderboard();
         </div>
         <div class="points">${player.masterpiecePoints.toLocaleString()} pts</div>
       `;
-  
       leaderboardList.appendChild(listItem);
     });
   }
-  
-  function getPreviousPosition(playerUid) {
-    if (!previousLeaderboard.length) return null;
-    const previousPlayer = previousLeaderboard.find(p => p.profile.uid === playerUid);
-    return previousPlayer ? previousPlayer.position : null;
+
+  function getPreviousPosition(uid) {
+    const prev = previousLeaderboard.find(p => p.profile.uid === uid);
+    return prev ? prev.position : null;
   }
-  
+
   function getPositionChangeHtml(change) {
     if (change === null) return '<span class="position-change new">(NEW)</span>';
     if (change > 0) return `<span class="position-change up">(+${change})</span>`;
     if (change < 0) return `<span class="position-change down">(${change})</span>`;
     return '<span class="position-change same">(=)</span>';
   }
-  
+
   function startAutoRefresh() {
-    fetchLeaderboard().then(() => {
-      autoRefreshInterval = setInterval(fetchLeaderboard, REFRESH_INTERVAL);
-      autoRefreshBtn.disabled = true;
-      stopAutoRefreshBtn.disabled = false;
-      showStatus(`Auto-refresh enabled (every ${REFRESH_INTERVAL / 1000} seconds)`);
-    });
+    fetchLeaderboard();
+    autoRefreshInterval = setInterval(fetchLeaderboard, REFRESH_INTERVAL);
+    autoRefreshBtn.disabled = true;
+    stopAutoRefreshBtn.disabled = false;
+    showStatus(`Auto-refresh enabled (${REFRESH_INTERVAL / 1000}s)`);
   }
-  
+
   function stopAutoRefresh() {
-    if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    clearInterval(autoRefreshInterval);
     autoRefreshInterval = null;
     autoRefreshBtn.disabled = false;
     stopAutoRefreshBtn.disabled = true;
-    showStatus('Auto-refresh disabled');
+    showStatus("Auto-refresh disabled");
   }
-  const fakeToken = 'Wallet 0x123456789abcdef';  // 🔐 temporary simulated token
 
-async function fetchWithFakeToken() {
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': fakeToken  // ✅ this will be forwarded to the proxy
-    },
-    body: JSON.stringify({
-      query: GRAPHQL_QUERY,
-      variables: { id: MASTERPIECE_ID }
-    })
-  });
-
-  const data = await response.json();
-  console.log('Response with fake token:', data);
-  return data;
-}
-
-// Call the function if needed
-// fetchWithFakeToken();
-
-  // Optional: Mock data for development fallback
   function generateMockData() {
     return Array.from({ length: 10 }, (_, i) => ({
       position: i + 1,
@@ -739,4 +624,4 @@ async function fetchWithFakeToken() {
       }
     }));
   }
-  </script>
+</script>
