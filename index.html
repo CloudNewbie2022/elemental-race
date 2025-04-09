@@ -214,6 +214,126 @@
   
   <canvas id="leaderboardChart" width="800" height="400"></canvas>
   
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elemental Leaderboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #1e1e1e;
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+      margin: 0;
+      padding: 2rem;
+    }
+    .leaderboard-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .player-bar {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      background-color: #2c2c2c;
+      border: 2px solid #8e44ad;
+      border-radius: 10px;
+      padding: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    .player-bar .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
+    .player-bar .bar {
+      background-image: url('your-generative-art.gif'); /* Replace with your looping AI art */
+      background-size: cover;
+      height: 40px;
+      border-radius: 8px;
+      transition: width 0.6s ease;
+    }
+    .bar-wrapper {
+      flex-grow: 1;
+      background-color: #3b3b3b;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .player-bar .label {
+      margin-left: 1rem;
+      white-space: nowrap;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="leaderboard-container" id="leaderboard"></div>
+
+  <script>
+    const leaderboardData = [
+      {
+        profile: {
+          displayName: "Miner Mike",
+          avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=1"
+        },
+        masterpiecePoints: 7500
+      },
+      {
+        profile: {
+          displayName: "Driller Dave",
+          avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=2"
+        },
+        masterpiecePoints: 6200
+      },
+      {
+        profile: {
+          displayName: "Sweaty Steve",
+          avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=3"
+        },
+        masterpiecePoints: 5400
+      }
+    ];
+
+    const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
+
+    const leaderboardEl = document.getElementById('leaderboard');
+
+    leaderboardData.forEach(player => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'player-bar';
+
+      const avatar = document.createElement('img');
+      avatar.className = 'avatar';
+      avatar.src = player.profile.avatarUrl;
+
+      const barWrapper = document.createElement('div');
+      barWrapper.className = 'bar-wrapper';
+
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
+
+      const label = document.createElement('div');
+      label.className = 'label';
+      label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
+
+      barWrapper.appendChild(bar);
+      wrapper.appendChild(avatar);
+      wrapper.appendChild(barWrapper);
+      wrapper.appendChild(label);
+      leaderboardEl.appendChild(wrapper);
+    });
+  </script>
+</body>
+</html>
+
 
   <div class="podium">
     <div class="podium-step first-place">
