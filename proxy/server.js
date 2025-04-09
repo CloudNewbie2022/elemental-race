@@ -4,8 +4,11 @@ const fetch = require('node-fetch');
 const path = require('path');
 const cors = require('cors');
 
+const fakeToken = 'Wallet 0x123456789abcdef';
+
 const app = express();
 const PORT = process.env.PORT || 8080;
+
 
 // ✅ Apply basic CORS globally
 app.use(cors({
@@ -37,21 +40,27 @@ app.use((req, res, next) => {
 // ✅ Serve static files (optional)
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
-// ✅ GraphQL Proxy Route
 app.post('/graphql', async (req, res) => {
   try {
+    const headersToForward = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+
+    // 👇 Forward auth if present
+    if (req.headers.authorization) {
+      headersToForward['Authorization'] = req.headers.authorization;
+      console.log('🔐 Forwarding auth header:', req.headers.authorization);
+    }
+
     const response = await fetch('https://api-preview.apps.angrydynomiteslab.com/graphql', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(req.body),
+      headers: headersToForward,
+      body: JSON.stringify(req.body)
     });
 
     const data = await response.json();
 
-    // ✅ Apply CORS headers to response (just in case)
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -63,6 +72,7 @@ app.post('/graphql', async (req, res) => {
     res.status(500).json({ error: 'Proxy server error', details: err.message });
   }
 });
+
 
 // ✅ Root Test Route
 app.get('/', (req, res) => {

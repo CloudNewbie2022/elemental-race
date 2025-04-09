@@ -420,7 +420,20 @@
     stopAutoRefreshBtn.disabled = true;
     showStatus('Auto-refresh disabled');
   }
-  
+  const fakeToken = 'Wallet 0x123456789abcdef';  // 🔐 temporary simulated token
+
+const response = await fetch(API_URL, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': fakeToken  // ✅ this will be forwarded to the proxy
+  },
+  body: JSON.stringify({
+    query: GRAPHQL_QUERY,
+    variables: { id: MASTERPIECE_ID }
+  })
+});
   // Optional: Mock data for development fallback
   function generateMockData() {
     return Array.from({ length: 10 }, (_, i) => ({
