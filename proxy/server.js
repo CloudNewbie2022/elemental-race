@@ -2,39 +2,30 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const path = require('path');
+const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-const cors = require('cors');
+// ✅ Apply basic CORS globally
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Accept', 'X-Requested-With'],
+}));
 
-// Apply CORS globally
-app.use(cors());
-
-// Handle preflight OPTIONS requests with custom headers
+// ✅ Handle CORS preflight requests for /graphql
 app.options('/graphql', (req, res) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.sendStatus(204); // No Content
 });
 
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Accept', 'X-Requested-With']
-}));
-
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  next();
-});
-
+// ✅ Parse incoming JSON
 app.use(express.json());
 
-// Debug logging middleware
+// ✅ Debug logging middleware
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   if (req.body && Object.keys(req.body).length) {
@@ -43,25 +34,28 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static files (optional)
+// ✅ Serve static files (optional)
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
+// ✅ GraphQL Proxy Route
 app.post('/graphql', async (req, res) => {
   try {
     const response = await fetch('https://api-preview.apps.angrydynomiteslab.com/graphql', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
       },
-      body: JSON.stringify(req.body)
+      body: JSON.stringify(req.body),
     });
 
-    res.setHeader("Access-Control-Allow-Origin", "*");
-res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-
     const data = await response.json();
+
+    // ✅ Apply CORS headers to response (just in case)
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+
     console.log('✅ Forwarded response:', JSON.stringify(data, null, 2));
     res.status(response.status).json(data);
   } catch (err) {
@@ -70,10 +64,12 @@ res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   }
 });
 
+// ✅ Root Test Route
 app.get('/', (req, res) => {
   res.send('🌐 Elemental Proxy Server is running.');
 });
 
+// ✅ Start the server
 app.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
 });
