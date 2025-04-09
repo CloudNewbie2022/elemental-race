@@ -1,11 +1,14 @@
 {
   "devDependencies": {
     "concurrently": "^9.1.2",
-    "live-server": "^1.2.2"
+    "live-server": "^1.2.0"
   },
   "scripts": {
     "start": "concurrently \"npm run start:frontend\" \"npm run start:proxy\"",
     "start:frontend": "live-server  --port=5500 --host=0.0.0.0 ./",
     "start:proxy": "node proxy/server.js"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.8"
   }
 }
