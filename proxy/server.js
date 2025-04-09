@@ -57,6 +57,10 @@ app.post('/graphql', async (req, res) => {
       body: JSON.stringify(req.body)
     });
 
+    res.setHeader("Access-Control-Allow-Origin", "*");
+res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+
     const data = await response.json();
     console.log('✅ Forwarded response:', JSON.stringify(data, null, 2));
     res.status(response.status).json(data);
