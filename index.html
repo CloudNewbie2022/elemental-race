@@ -428,18 +428,28 @@ fetchLeaderboard();
   }
   const fakeToken = 'Wallet 0x123456789abcdef';  // 🔐 temporary simulated token
 
-const response = await fetch(API_URL, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': fakeToken  // ✅ this will be forwarded to the proxy
-  },
-  body: JSON.stringify({
-    query: GRAPHQL_QUERY,
-    variables: { id: MASTERPIECE_ID }
-  })
-});
+async function fetchWithFakeToken() {
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': fakeToken  // ✅ this will be forwarded to the proxy
+    },
+    body: JSON.stringify({
+      query: GRAPHQL_QUERY,
+      variables: { id: MASTERPIECE_ID }
+    })
+  });
+
+  const data = await response.json();
+  console.log('Response with fake token:', data);
+  return data;
+}
+
+// Call the function if needed
+// fetchWithFakeToken();
+
   // Optional: Mock data for development fallback
   function generateMockData() {
     return Array.from({ length: 10 }, (_, i) => ({
@@ -454,4 +464,3 @@ const response = await fetch(API_URL, {
     }));
   }
   </script>
-  
