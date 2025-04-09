@@ -309,6 +309,8 @@
 
     const result = await response.json();
 
+    console.log("🔍 Raw result:", result);
+
     console.log("💾 masterpiece:", result?.data?.masterpiece);
 
     if (!result.data || !result.data.masterpiece) {
