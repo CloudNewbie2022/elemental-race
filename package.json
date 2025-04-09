@@ -5,7 +5,7 @@
   },
   "scripts": {
     "start": "concurrently \"npm run start:frontend\" \"npm run start:proxy\"",
-    "start:frontend": "live-server ./",
+    "start:frontend": "live-server  --port=5500 --host=0.0.0.0 ./",
     "start:proxy": "node ../proxy/server.js"
   },
   "proxy": {
