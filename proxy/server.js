@@ -8,13 +8,16 @@ const PORT = process.env.PORT || 8080;
 
 const cors = require('cors');
 
+// Apply CORS globally
+app.use(cors());
+
+// Handle preflight OPTIONS requests with custom headers
 app.options('/graphql', (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.sendStatus(204);
+  res.sendStatus(204); // No Content
 });
-
 
 app.use(cors({
   origin: '*',
