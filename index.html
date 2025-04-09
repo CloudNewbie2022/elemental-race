@@ -527,6 +527,70 @@ function renderChart(data) {
   });
 }
 
+function renderLeaderboardChart(data) {
+  const ctx = document.getElementById('leaderboardCanvas').getContext('2d');
+
+  const labels = data.map(p => p.profile.displayName || p.profile.walletAddress.slice(0, 6));
+  const values = data.map(p => p.masterpiecePoints);
+
+  const backgroundImages = data.map((_, i) => {
+    const img = new Image();
+    img.src = `/path/to/your/generative-art-${i % 3 + 1}.gif`; // Swap this with your loop art
+    return img;
+  });
+
+  // Use a plugin to render images instead of bars
+  const imageBarPlugin = {
+    id: 'imageBarPlugin',
+    afterDatasetDraw(chart) {
+      const {ctx, chartArea: {top, left}, scales: {x, y}} = chart;
+      chart.getDatasetMeta(0).data.forEach((bar, index) => {
+        const img = backgroundImages[index];
+        const barWidth = bar.width;
+        const barHeight = bar.height;
+        ctx.drawImage(img, bar.x, bar.y, barWidth, barHeight);
+      });
+    }
+  };
+  
+  renderLeaderboardChart(currentLeaderboard);
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Masterpiece Points',
+        data: values,
+        backgroundColor: 'rgba(0,0,0,0)', // transparent to layer image
+        borderColor: 'rgba(255,255,255,0.2)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      animation: {
+        duration: 1000
+      },
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          title: { display: true, text: 'Points', color: 'white' },
+          ticks: { color: 'white' }
+        },
+        y: {
+          title: { display: true, text: 'Player', color: 'white' },
+          ticks: { color: 'white' }
+        }
+      }
+    },
+    plugins: [imageBarPlugin]
+  });
+}
+
 document.getElementById('updateChartSize').addEventListener('click', () => {
   const width = parseInt(document.getElementById('chartWidth').value, 10);
   const height = parseInt(document.getElementById('chartHeight').value, 10);
