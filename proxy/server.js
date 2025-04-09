@@ -9,7 +9,10 @@ const PORT = process.env.PORT || 8080;
 const cors = require('cors');
 
 app.options('/graphql', (req, res) => {
-  res.sendStatus(204); // No Content
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.sendStatus(204);
 });
 
 
