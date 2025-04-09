@@ -204,6 +204,17 @@
 <body>
   <h1>Angry Dynomites Leaderboard</h1>
 
+  <section id="chart-tools" style="margin-bottom: 1rem;">
+    <label for="chartWidth">Width:</label>
+    <input type="number" id="chartWidth" value="800" min="300" max="1600">
+    <label for="chartHeight">Height:</label>
+    <input type="number" id="chartHeight" value="400" min="200" max="1000">
+    <button id="updateChartSize">Update Chart Size</button>
+  </section>
+  
+  <canvas id="leaderboardChart" width="800" height="400"></canvas>
+  
+
   <div class="podium">
     <div class="podium-step first-place">
       <div class="podium-rank">1st</div>
@@ -286,8 +297,11 @@
     statusElement.textContent = message;
     statusElement.style.color = isError ? '#e74c3c' : '#bdc3c7';
   }
-  
-  <canvas id="leaderboardChart" width="800" height="400"></canvas>
+
+
+
+
+
 
 
   async function fetchLeaderboard() {
@@ -379,6 +393,22 @@ function renderChart(data) {
     }
   });
 }
+
+document.getElementById('updateChartSize').addEventListener('click', () => {
+  const width = parseInt(document.getElementById('chartWidth').value, 10);
+  const height = parseInt(document.getElementById('chartHeight').value, 10);
+
+  const canvas = document.getElementById('leaderboardChart');
+  canvas.width = width;
+  canvas.height = height;
+
+  // Re-render chart with current data (you can store it in a variable)
+  if (currentLeaderboard.length > 0) {
+    renderChart(currentLeaderboard);
+  } else {
+    showStatus("⚠️ No leaderboard data loaded yet");
+  }
+});
 
 
 // 🚀 Run it on page load
