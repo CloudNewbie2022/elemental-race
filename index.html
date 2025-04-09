@@ -288,47 +288,53 @@
   }
   
   async function fetchLeaderboard() {
-    try {
-      showStatus('Loading leaderboard data...');
-  
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-          query: GRAPHQL_QUERY,
-          variables: { id: MASTERPIECE_ID }
-        })
-      });
-  
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const result = await response.json();
-  
-      console.log("💾 masterpiece:", result?.data?.masterpiece);
-  
-      if (!result.data || !result.data.masterpiece) {
-        showStatus("⚠️ No masterpiece data available");
-        return;
-      }
-  
-      const leaderboardData = result.data.masterpiece.leaderboard;
-      processNewData(leaderboardData);
-      showStatus('Leaderboard updated at ' + new Date().toLocaleTimeString());
-      return leaderboardData;
-  
-    } catch (error) {
-      console.error('Error fetching leaderboard:', error);
-      showStatus('Error loading leaderboard: ' + error.message, true);
-  
-      const mockData = generateMockData();
-      processNewData(mockData);
-      return mockData;
+  try {
+    showStatus('Loading leaderboard data...');
+
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Authorization': 'Bearer test-token' // 👈 Swap with real token or test value
+      },
+      body: JSON.stringify({
+        query: GRAPHQL_QUERY,
+        variables: { id: MASTERPIECE_ID }
+      })
+    });
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+    const result = await response.json();
+
+    console.log("💾 masterpiece:", result?.data?.masterpiece);
+
+    if (!result.data || !result.data.masterpiece) {
+      showStatus("⚠️ No masterpiece data available");
+      return;
     }
+
+    const leaderboardData = result.data.masterpiece.leaderboard;
+    processNewData(leaderboardData);
+    showStatus('Leaderboard updated at ' + new Date().toLocaleTimeString());
+
+    return leaderboardData;
+
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error);
+    showStatus('❌ Error loading leaderboard: ' + error.message, true);
+
+    const mockData = generateMockData();
+    processNewData(mockData);
+    return mockData;
   }
-  
+}
+
+// 🚀 Run it on page load
+fetchLeaderboard();
+
   function processNewData(newData) {
     previousLeaderboard = [...currentLeaderboard];
     currentLeaderboard = newData;
