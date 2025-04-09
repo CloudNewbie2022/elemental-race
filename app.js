@@ -21,7 +21,7 @@ async function fetchLeaderboard(userAddress) {
     console.log("🔍 Fetching real data from proxy...");
     // Fetch leaderboard data from the GraphQL API
     // Replace with your actual GraphQL API endpoint
-    const response = await fetch('https://Hear_my_cries.countlessconsid.repl.co/graphql', {
+    const response = await fetch('https://ab782caa-f065-4ff3-bb94-3d5019d411fd-00-1he2khpvaeygc.janeway.replit.dev/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
