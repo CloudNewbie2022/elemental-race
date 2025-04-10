@@ -554,35 +554,51 @@
   }
 
   function updateLeaderboardList() {
-    leaderboardList.innerHTML = '';
-    if (!currentLeaderboard.length) {
-      leaderboardList.innerHTML = '<li class="loading">No leaderboard data available</li>';
-      return;
-    }
+  leaderboardList.innerHTML = '';
 
-    currentLeaderboard.forEach((player, index) => {
-      const listItem = document.createElement('li');
-      listItem.className = 'player';
-
-      const prevPosition = getPreviousPosition(player.profile.uid);
-      const positionChange = prevPosition !== null ? prevPosition - player.position : null;
-      if (Math.abs(positionChange) >= 3) listItem.classList.add('highlight');
-
-      listItem.innerHTML = `
-        <div class="player-info">
-          <div class="rank">${player.position}</div>
-          <img class="avatar" src="${player.profile.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=Player${index}`}"
-               alt="${player.profile.displayName}" width="60" height="60">
-          <div>
-            <span class="name">${player.profile.displayName}</span>
-            ${getPositionChangeHtml(positionChange)}
-          </div>
-        </div>
-        <div class="points">${player.masterpiecePoints.toLocaleString()} pts</div>
-      `;
-      leaderboardList.appendChild(listItem);
-    });
+  if (!currentLeaderboard.length) {
+    leaderboardList.innerHTML = '<li class="loading">No leaderboard data available</li>';
+    return;
   }
+
+  currentLeaderboard.forEach((player, index) => {
+    const listItem = document.createElement('li');
+    listItem.className = 'player-bar';
+
+    const avatar = document.createElement('img');
+    avatar.className = 'avatar';
+    avatar.src = player.profile.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=Player${index}`;
+    avatar.alt = player.profile.displayName;
+
+    const barWrapper = document.createElement('div');
+    barWrapper.className = 'bar-wrapper';
+
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+
+    // 👇 Assign generative GIFs in rotation
+    const gifIndex = (index % 3) + 1;
+    bar.style.backgroundImage = `url('/assets/generative-art-${gifIndex}.gif')`;
+
+    const score = player.masterpiecePoints;
+    const maxScore = Math.max(...currentLeaderboard.map(p => p.masterpiecePoints));
+    const percentage = Math.max((score / maxScore) * 100, 5);
+    bar.style.width = `${percentage}%`;
+
+    barWrapper.appendChild(bar);
+
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = `${player.profile.displayName} • ${score.toLocaleString()} pts`;
+
+    listItem.appendChild(avatar);
+    listItem.appendChild(barWrapper);
+    listItem.appendChild(label);
+
+    leaderboardList.appendChild(listItem);
+  });
+}
+
 
   function getPreviousPosition(uid) {
     const prev = previousLeaderboard.find(p => p.profile.uid === uid);
