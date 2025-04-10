@@ -285,6 +285,10 @@
 <body>
   <div class="leaderboard-container" id="leaderboard"></div>
 
+  <img class="avatar" src="${player.profile.avatarUrl || DEFAULT_AVATAR}"
+  alt="${player.profile.displayName}" width="60" height="60">
+
+
   <script>
     const leaderboardData = [
       {
