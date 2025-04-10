@@ -263,7 +263,7 @@
       flex-shrink: 0;
     }
     .player-bar .bar { /*THERES AN EXTRA A IN GERNERATIVE also capital g */
-      background-image: url('/assets/Generaative-art-1.gif'); /* Replace with your looping AI art */
+      background-image: url('/assets/generative-art-1.gif'); /* Replace with your looping AI art */
       background-size: cover;
       height: 40px;
       border-radius: 8px;
@@ -363,8 +363,6 @@
       <img class="podium-avatar" id="third-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Player3" alt="Third Place Avatar">
       <div class="podium-name" id="third-name">-</div>
       <div class="podium-bar"></div>
-      <img class="avatar" src="${player.profile.avatarUrl || DEFAULT_AVATAR}"
-      alt="${player.profile.displayName}" width="60" height="60">
 
     </div>
   </div>
@@ -388,6 +386,38 @@
   const MASTERPIECE_ID = 112;
   const USER_ID = "lFMi7D6YWHYL78J8EeYGmb7mAPv2";
   const fakeToken = 'Bearer Wallet 0x123456789abcdef'; // Use a real token if needed
+
+
+
+
+
+
+/* Avatar URL for default image */
+
+
+  const DEFAULT_AVATAR = '/assets/default-avatar.png'; // make sure this file exists
+
+  const avatarSrc = player.profile.avatarUrl || DEFAULT_AVATAR;
+
+listItem.innerHTML = `
+  <div class="player-info">
+    <div class="rank">${player.position}</div>
+    <img class="avatar" src="${avatarSrc}"
+         alt="${player.profile.displayName}" width="60" height="60">
+    <div>
+      <span class="name">${player.profile.displayName}</span>
+      ${getPositionChangeHtml(positionChange)}
+    </div>
+  </div>
+  <div class="points">${player.masterpiecePoints.toLocaleString()} pts</div>
+`;
+
+
+
+
+
+
+
 
   const GRAPHQL_QUERY = `
     query Masterpiece($id: ID) {
