@@ -395,10 +395,9 @@
 /* Avatar URL for default image */
 
 
+const DEFAULT_AVATAR = '/assets/default-avatar.png'; // ✅ Make sure this image exists in /assets
 
-  const DEFAULT_AVATAR = '/assets/default-avatar.png'; // make sure this file exists
-
-  const avatarSrc = player.profile.avatarUrl || DEFAULT_AVATAR;
+const avatarSrc = player.profile.avatarUrl || DEFAULT_AVATAR;
 
 listItem.innerHTML = `
   <div class="player-info">
@@ -412,8 +411,6 @@ listItem.innerHTML = `
   </div>
   <div class="points">${player.masterpiecePoints.toLocaleString()} pts</div>
 `;
-
-
 
 
 
