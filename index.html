@@ -263,7 +263,7 @@
       flex-shrink: 0;
     }
     .player-bar .bar {
-      background-image: url('your-generative-art.gif'); /* Replace with your looping AI art */
+      background-image: url('/assets/generative-art-1.gif'); /* Replace with your looping AI art */
       background-size: cover;
       height: 40px;
       border-radius: 8px;
@@ -284,9 +284,6 @@
 </head>
 <body>
   <div class="leaderboard-container" id="leaderboard"></div>
-
-  <img class="avatar" src="${player.profile.avatarUrl || DEFAULT_AVATAR}"
-  alt="${player.profile.displayName}" width="60" height="60">
 
 
   <script>
@@ -366,6 +363,9 @@
       <img class="podium-avatar" id="third-avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=Player3" alt="Third Place Avatar">
       <div class="podium-name" id="third-name">-</div>
       <div class="podium-bar"></div>
+      <img class="avatar" src="${player.profile.avatarUrl || DEFAULT_AVATAR}"
+      alt="${player.profile.displayName}" width="60" height="60">
+
     </div>
   </div>
 
@@ -574,6 +574,8 @@
     avatar.src = player.profile.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=Player${index}`;
     avatar.alt = player.profile.displayName;
 
+
+    
     const barWrapper = document.createElement('div');
     barWrapper.className = 'bar-wrapper';
 
