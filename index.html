@@ -216,6 +216,135 @@
   
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elemental Leaderboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+
+#leaderboardCanvas {
+  background-color: #2c2c2c; /* Dark mechanical backdrop */
+  border: 4px solid purple;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto;
+}
+
+    body {
+      background-color: #1e1e1e;
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+      margin: 0;
+      padding: 2rem;
+    }
+    .leaderboard-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .player-bar {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      background-color: #2c2c2c;
+      border: 2px solid #8e44ad;
+      border-radius: 10px;
+      padding: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+    .player-bar .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
+    .player-bar .bar { /*THERES AN EXTRA A IN GERNERATIVE also capital g */
+      background-image: url('/assets/generative-art-1.gif'); /* Replace with your looping AI art */
+      background-size: cover;
+      height: 40px;
+      border-radius: 8px;
+      transition: width 0.6s ease;
+    }
+    .bar-wrapper {
+      flex-grow: 1;
+      background-color: #3b3b3b;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .player-bar .label {
+      margin-left: 1rem;
+      white-space: nowrap;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="leaderboard-container" id="leaderboard"></div>
+
+
+  <script>
+    const leaderboardData = [
+      {
+        profile: {
+          displayName: "Miner Mike",
+          avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=1"
+        },
+        masterpiecePoints: 7500
+      },
+      {
+        profile: {
+          displayName: "Driller Dave",
+          avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=2"
+        },
+        masterpiecePoints: 6200
+      },
+      {
+        profile: {
+          displayName: "Sweaty Steve",
+          avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=3"
+        },
+        masterpiecePoints: 5400
+      }
+    ];
+
+    const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
+
+    const leaderboardEl = document.getElementById('leaderboard');
+
+    leaderboardData.forEach(player => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'player-bar';
+
+      const avatar = document.createElement('img');
+      avatar.className = 'avatar';
+      avatar.src = player.profile.avatarUrl;
+
+      const barWrapper = document.createElement('div');
+      barWrapper.className = 'bar-wrapper';
+
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
+
+      const label = document.createElement('div');
+      label.className = 'label';
+      label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
+
+      barWrapper.appendChild(bar);
+      wrapper.appendChild(avatar);
+      wrapper.appendChild(barWrapper);
+      wrapper.appendChild(label);
+      leaderboardEl.appendChild(wrapper);
+    });
+  </script>
+</body>
+</html>
+
+
   <div class="podium">
     <div class="podium-step first-place">
       <div class="podium-rank">1st</div>
@@ -256,12 +385,37 @@
   const REFRESH_INTERVAL = 30000;
   const MASTERPIECE_ID = 112;
   const USER_ID = "lFMi7D6YWHYL78J8EeYGmb7mAPv2";
-  const AUTH_TOKEN = 'Bearer Wallet 0x123456789abcdef'; // Replace with a valid token if required
+  const fakeToken = 'Bearer Wallet 0x123456789abcdef'; // Use a real token if needed
 
-  const DEFAULT_AVATAR = '/assets/default-avatar.png'; // Ensure this image exists in /assets
+
+
+
+
+
+/* Avatar URL for default image */
+
+
+const DEFAULT_AVATAR = '/assets/default-avatar.png'; // ✅ Make sure this image exists in /assets
+
+const avatarSrc = player.profile.avatarUrl || DEFAULT_AVATAR;
+
+listItem.innerHTML = `
+  <div class="player-info">
+    <div class="rank">${player.position}</div>
+    <img class="avatar" src="${avatarSrc}"
+         alt="${player.profile.displayName}" width="60" height="60">
+    <div>
+      <span class="name">${player.profile.displayName}</span>
+      ${getPositionChangeHtml(positionChange)}
+    </div>
+  </div>
+  <div class="points">${player.masterpiecePoints.toLocaleString()} pts</div>
+`;
+
+
 
   const GRAPHQL_QUERY = `
-    query Masterpiece($id: ID!) {
+    query Masterpiece($id: ID) {
       masterpiece(id: $id) {
         leaderboard {
           position
@@ -278,6 +432,7 @@
   `;
 
   let currentLeaderboard = [];
+  let previousLeaderboard = [];
   let autoRefreshInterval = null;
   let chartInstance = null;
 
@@ -307,71 +462,39 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': AUTH_TOKEN,
+          'Accept': 'application/json',
+          'Authorization': fakeToken
         },
         body: JSON.stringify({
           query: GRAPHQL_QUERY,
-          variables: { id: MASTERPIECE_ID },
-        }),
+          variables: { id: MASTERPIECE_ID }
+        })
       });
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
       const result = await response.json();
-      const leaderboardData = result?.data?.masterpiece?.leaderboard;
+      console.log("🔍 Raw result:", result);
 
-      if (!leaderboardData) {
-        throw new Error('No leaderboard data returned from API');
+      const masterpiece = result?.data?.masterpiece;
+      if (!masterpiece || !masterpiece.leaderboard) {
+        throw new Error('No masterpiece data');
       }
 
+      const leaderboardData = masterpiece.leaderboard;
       processNewData(leaderboardData);
       renderChart(leaderboardData);
       showStatus('✅ Leaderboard updated at ' + new Date().toLocaleTimeString());
+      return leaderboardData;
+
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
       showStatus("❌ Error loading leaderboard: " + error.message, true);
+      const mockData = generateMockData();
+      processNewData(mockData);
+      renderChart(mockData);
+      return mockData;
     }
-  }
-
-  function processNewData(newData) {
-    currentLeaderboard = newData;
-    updateLeaderboardList();
-  }
-
-  function updateLeaderboardList() {
-    leaderboardList.innerHTML = '';
-
-    if (!currentLeaderboard.length) {
-      leaderboardList.innerHTML = '<li class="loading">No leaderboard data available</li>';
-      return;
-    }
-
-    currentLeaderboard.forEach((player, index) => {
-      const listItem = document.createElement('li');
-      listItem.className = 'player-bar';
-
-      const avatar = document.createElement('img');
-      avatar.className = 'avatar';
-      avatar.src = player.profile.avatarUrl || DEFAULT_AVATAR;
-      avatar.alt = player.profile.displayName;
-
-      const barWrapper = document.createElement('div');
-      barWrapper.className = 'bar-wrapper';
-
-      const bar = document.createElement('div');
-      bar.className = 'bar';
-      bar.style.width = `${(player.masterpiecePoints / Math.max(...currentLeaderboard.map(p => p.masterpiecePoints))) * 100}%`;
-
-      const label = document.createElement('div');
-      label.className = 'label';
-      label.textContent = `${player.profile.displayName} (${player.masterpiecePoints.toLocaleString()} pts)`;
-
-      barWrapper.appendChild(bar);
-      listItem.appendChild(avatar);
-      listItem.appendChild(barWrapper);
-      listItem.appendChild(label);
-      leaderboardList.appendChild(listItem);
-    });
   }
 
   function renderChart(data) {
@@ -388,20 +511,136 @@
       data: {
         labels: labels,
         datasets: [{
-          label: 'Masterpiece Points',
+          label: '🔥 Masterpiece Points',
           data: scores,
           backgroundColor: data.map((_, i) => `hsl(${i * 36}, 70%, 60%)`),
-        }],
+          borderColor: 'rgba(0,0,0,0.1)',
+          borderWidth: 1,
+        }]
       },
       options: {
         responsive: false,
         maintainAspectRatio: false,
-        scales: {
-          x: { beginAtZero: true },
-          y: { beginAtZero: true },
+        indexAxis: 'y',
+        animation: { duration: 800 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.raw.toLocaleString()} pts`
+            }
+          }
         },
-      },
+        scales: {
+          x: {
+            beginAtZero: true,
+            title: { display: true, text: 'Points' }
+          },
+          y: {
+            title: { display: true, text: 'Player' }
+          }
+        }
+      }
     });
+  }
+
+  document.getElementById('updateChartSize').addEventListener('click', () => {
+    const width = parseInt(document.getElementById('chartWidth').value, 10);
+    const height = parseInt(document.getElementById('chartHeight').value, 10);
+
+    const canvas = document.getElementById('leaderboardChart');
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+
+    if (currentLeaderboard.length > 0) {
+      renderChart(currentLeaderboard);
+    } else {
+      showStatus("⚠️ No leaderboard data loaded yet");
+    }
+  });
+
+  function processNewData(newData) {
+    previousLeaderboard = [...currentLeaderboard];
+    currentLeaderboard = newData;
+    updatePodium();
+    updateLeaderboardList();
+  }
+
+  function updatePodium() {
+    const [first, second, third] = currentLeaderboard;
+    if (first) {
+      document.getElementById('first-name').textContent = first.profile.displayName;
+      document.getElementById('first-avatar').src = first.profile.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=Player1`;
+    }
+    if (second) {
+      document.getElementById('second-name').textContent = second.profile.displayName;
+      document.getElementById('second-avatar').src = second.profile.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=Player2`;
+    }
+    if (third) {
+      document.getElementById('third-name').textContent = third.profile.displayName;
+      document.getElementById('third-avatar').src = third.profile.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=Player3`;
+    }
+  }
+
+  function updateLeaderboardList() {
+  leaderboardList.innerHTML = '';
+
+  if (!currentLeaderboard.length) {
+    leaderboardList.innerHTML = '<li class="loading">No leaderboard data available</li>';
+    return;
+  }
+
+  currentLeaderboard.forEach((player, index) => {
+    const listItem = document.createElement('li');
+    listItem.className = 'player-bar';
+
+    const avatar = document.createElement('img');
+    avatar.className = 'avatar';
+    avatar.src = player.profile.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=Player${index}`;
+    avatar.alt = player.profile.displayName;
+
+
+    
+    const barWrapper = document.createElement('div');
+    barWrapper.className = 'bar-wrapper';
+
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+
+    // 👇 Assign generative GIFs in rotation
+    const gifIndex = (index % 3) + 1;
+    bar.style.backgroundImage = `url('/assets/generative-art-${gifIndex}.gif')`;
+
+    const score = player.masterpiecePoints;
+    const maxScore = Math.max(...currentLeaderboard.map(p => p.masterpiecePoints));
+    const percentage = Math.max((score / maxScore) * 100, 5);
+    bar.style.width = `${percentage}%`;
+
+    barWrapper.appendChild(bar);
+
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = `${player.profile.displayName} • ${score.toLocaleString()} pts`;
+
+    listItem.appendChild(avatar);
+    listItem.appendChild(barWrapper);
+    listItem.appendChild(label);
+
+    leaderboardList.appendChild(listItem);
+  });
+}
+
+
+  function getPreviousPosition(uid) {
+    const prev = previousLeaderboard.find(p => p.profile.uid === uid);
+    return prev ? prev.position : null;
+  }
+
+  function getPositionChangeHtml(change) {
+    if (change === null) return '<span class="position-change new">(NEW)</span>';
+    if (change > 0) return `<span class="position-change up">(+${change})</span>`;
+    if (change < 0) return `<span class="position-change down">(${change})</span>`;
+    return '<span class="position-change same">(=)</span>';
   }
 
   function startAutoRefresh() {
@@ -418,5 +657,18 @@
     autoRefreshBtn.disabled = false;
     stopAutoRefreshBtn.disabled = true;
     showStatus("Auto-refresh disabled");
+  }
+
+  function generateMockData() {
+    return Array.from({ length: 10 }, (_, i) => ({
+      position: i + 1,
+      masterpiecePoints: Math.floor(Math.random() * 10000),
+      profile: {
+        uid: `mock-${i}`,
+        walletAddress: `0x${Math.random().toString(16).substring(2, 42)}`,
+        avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=Mock${i}`,
+        displayName: `Player ${i + 1}`
+      }
+    }));
   }
 </script>
