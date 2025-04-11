@@ -9,6 +9,7 @@
     "start:proxy": "node proxy/server.js"
   },
   "dependencies": {
-    "chart.js": "^4.4.8"
+    "chart.js": "^4.4.8",
+    "cors": "^2.8.5"
   }
 }
