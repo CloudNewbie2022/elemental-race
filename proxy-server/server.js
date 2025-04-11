@@ -80,11 +80,6 @@ app.post('/graphql', async (req, res) => {
   }
 });
 
-// ✅ Fallback route to serve index.html
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../publish/index.html'));
-});
-
 
 // ✅ Start
 app.listen(PORT, () => {
