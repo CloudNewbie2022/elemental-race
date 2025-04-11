@@ -33,6 +33,9 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(require('cors')());
+
+
 // ✅ Static file support (if needed)
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
