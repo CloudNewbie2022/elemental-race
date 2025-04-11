@@ -59,7 +59,7 @@ app.post('/graphql', async (req, res) => {
       console.log('🔐 Forwarding auth header:', req.headers.authorization);
     }
 
-    const response = await fetch('/graphql', {
+    const response = await fetch('https://api-preview.apps.angrydynomiteslab.com/graphql', {
       method: 'POST',
       headers: headersToForward,
       body: JSON.stringify(req.body),
