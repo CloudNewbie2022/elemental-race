@@ -1,21 +1,14 @@
 version: '3.9'
 
 services:
-  frontend:
-    image: nginx:alpine
-    ports:
-      - "3000:80"
-    volumes:
-      - ./frontend:/usr/share/nginx/html
-    restart: always
-
   proxy:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    working_dir: /app
-    volumes:
-      - .:/app
-    command: ["node", "proxy-server/server.js"]
+    working_dir: /app/proxy-server
+    # ⛔ Remove volume temporarily!
+    # volumes:
+    #   - ./proxy-server:/app/proxy-server
+    command: ["node", "server.js"]
