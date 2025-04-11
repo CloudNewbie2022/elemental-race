@@ -3,18 +3,35 @@ const fetch = require('node-fetch');
 const API_URL = 'http://localhost:8080/graphql';
 
 const fieldsToTest = [
-  'rarity',
-  'tags',
-  'description',
-  'owner',
-  'image',
-  'imageUrl',
-  'category',
-  'updatedAt',
-  'createdAt',
-  'collection',
-  'status'
-];
+    'Resource',
+    'symbol',
+    'amount',
+    'avatar',
+    'isEns',
+    'Badge',
+    'badgeName',
+    'url',
+    'description',
+    'displayName',
+    'infoUrl',
+    'OnChainToken',
+    'eventId',
+    'name',
+    'position',
+    'profile',
+    'uid',
+    'displayName',
+    'mintDate',
+    'contract',
+    'requiredPoints',
+    'points',
+    'rewardstages',
+    'rank',
+    'score',
+    'value',
+    'trait_type'
+  ];
+  
 
 (async () => {
   for (const field of fieldsToTest) {
