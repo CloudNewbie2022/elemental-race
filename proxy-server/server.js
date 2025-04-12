@@ -1,4 +1,4 @@
-// server.js
+``
 const express = require('express');
 const fetch = require('node-fetch');
 const path = require('path');
@@ -7,31 +7,27 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+app.use(express.static(path.join(__dirname, '../publish'))); // Serve frontend
+app.use('/public', express.static(path.join(__dirname, '../publish/asset'))); // Serve assets
 
-
-app.use(express.static(path.join(__dirname, '../publish'))); // ✅ Serve frontend
-app.use('/public', express.static(path.join(__dirname, '../publish/asset'))); // ✅ Serve assets
-
-
-
-// ✅ Apply CORS middleware globally
+// Apply CORS middleware globally
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Accept', 'X-Requested-With', 'Authorization']
 }));
 
-// ✅ Explicitly handle OPTIONS preflight
+// Explicitly handle OPTIONS preflight
 app.options('/graphql', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.sendStatus(204);
-});
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.status(200).send(); // Send a 200 OK response
+  });
 
 app.use(express.json());
 
-// ✅ Log all incoming requests
+// Log all incoming requests
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   if (req.body && Object.keys(req.body).length) {
@@ -40,13 +36,13 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(require('cors')());
+// Remove this conflicting CORS middleware
+// app.use(require('cors')());
 
-
-// ✅ Static file support (if needed)
+// Static file support (if needed)
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
-// ✅ Proxy endpoint
+// Proxy endpoint
 app.post('/graphql', async (req, res) => {
   try {
     const headersToForward = {
@@ -67,7 +63,7 @@ app.post('/graphql', async (req, res) => {
 
     const data = await response.json();
 
-    // ✅ Set headers again on the actual response
+    // Set headers again on the actual response
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -80,8 +76,7 @@ app.post('/graphql', async (req, res) => {
   }
 });
 
-
-// ✅ Start
+// Start
 app.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
 });
