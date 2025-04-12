@@ -330,36 +330,6 @@
       }
 
 
-
-    const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
-
-    const leaderboardEl = document.getElementById('leaderboard');
-
-    leaderboardData.forEach(player => {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'player-bar';
-
-      const avatar = document.createElement('img');
-      avatar.className = 'avatar';
-      avatar.src = player.profile.avatarUrl;
-
-      const barWrapper = document.createElement('div');
-      barWrapper.className = 'bar-wrapper';
-
-      const bar = document.createElement('div');
-      bar.className = 'bar';
-      bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
-
-      const label = document.createElement('div');
-      label.className = 'label';
-      label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
-
-      barWrapper.appendChild(bar);
-      wrapper.appendChild(avatar);
-      wrapper.appendChild(barWrapper);
-      wrapper.appendChild(label);
-      leaderboardEl.appendChild(wrapper);
-    });
   </script>
 </body>
 </html>
