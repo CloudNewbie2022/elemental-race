@@ -1,4 +1,5 @@
 ``
+``
 const express = require('express');
 const fetch = require('node-fetch');
 const path = require('path');
@@ -9,22 +10,6 @@ const PORT = process.env.PORT || 8080;
 
 app.use(express.static(path.join(__dirname, '../publish'))); // Serve frontend
 app.use('/public', express.static(path.join(__dirname, '../publish/asset'))); // Serve assets
-
-// Apply CORS middleware globally
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Accept', 'X-Requested-With', 'Authorization']
-}));
-
-// Explicitly handle OPTIONS preflight
-app.options('/graphql', (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.status(200).send(); // Send a 200 OK response
-  });
-
 app.use(express.json());
 
 // Log all incoming requests
@@ -36,11 +21,20 @@ app.use((req, res, next) => {
   next();
 });
 
-// Remove this conflicting CORS middleware
-// app.use(require('cors')());
+// Apply CORS middleware globally
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Accept', 'X-Requested-With', 'Authorization']
+}));
 
-// Static file support (if needed)
-app.use('/static', express.static(path.join(__dirname, 'public')));
+// Explicitly handle OPTIONS preflight
+app.options('/graphql', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.status(200).send(); // Send a 200 OK response
+});
 
 // Proxy endpoint
 app.post('/graphql', async (req, res) => {
@@ -75,6 +69,9 @@ app.post('/graphql', async (req, res) => {
     res.status(500).json({ error: 'Proxy server error', details: err.message });
   }
 });
+
+// Static file support (if needed)
+app.use('/static', express.static(path.join(__dirname, 'public')));
 
 // Start
 app.listen(PORT, () => {
