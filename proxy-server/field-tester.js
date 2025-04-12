@@ -26,8 +26,8 @@ const fieldsToTest = [
     'requiredPoints',
     'points',
     'rewardstages',
-    'rank',
-    'score',
+    'list',
+    'line',
     'value',
     'trait_type'
   ];
