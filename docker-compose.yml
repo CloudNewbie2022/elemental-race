@@ -15,3 +15,10 @@ services:
     # volumes:
     #   - ./proxy-server:/app/proxy-server
     command: ["node", "server.js"]
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+    restart: always
