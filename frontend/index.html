@@ -294,7 +294,7 @@
 
 
 
-    
+
         // Function to display the leaderboard
       function displayLeaderboard(leaderboardData) {
         const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
@@ -332,7 +332,7 @@
       async function fetchData() {
         try {
           // Adjust the URL to match where your proxy is serving the API
-          const response = await fetch('/api/leaderboard');
+          const response = await fetch('/graphql');
           if (!response.ok) {
             throw new Error('Network response was not ok.');
           }
@@ -368,7 +368,7 @@
                 }
               ];
           displayLeaderboard(leaderboardData);
-        },
+        }
 
 
 
