@@ -289,29 +289,96 @@
 
 
   <script>
-    const leaderboardData = [
-      {
-        profile: {
-          displayName: "Miner Mike",
-          avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=1"
-        },
-        masterpiecePoints: 7500
-      },
-      {
-        profile: {
-          displayName: "Driller Dave",
-          avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=2"
-        },
-        masterpiecePoints: 6200
-      },
-      {
-        profile: {
-          displayName: "Sweaty Steve",
-          avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=3"
-        },
-        masterpiecePoints: 5400
+    
+
+
+
+
+    
+        // Function to display the leaderboard
+      function displayLeaderboard(leaderboardData) {
+        const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
+        const leaderboardEl = document.getElementById('leaderboard');
+        //Remove the previous leaderboard entries if they exist
+        leaderboardEl.innerHTML = '';
+
+        leaderboardData.forEach(player => {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'player-bar';
+
+          const avatar = document.createElement('img');
+          avatar.className = 'avatar';
+          avatar.src = player.profile.avatarUrl;
+
+          const barWrapper = document.createElement('div');
+          barWrapper.className = 'bar-wrapper';
+
+          const bar = document.createElement('div');
+          bar.className = 'bar';
+          bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
+
+          const label = document.createElement('div');
+          label.className = 'label';
+          label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
+
+          barWrapper.appendChild(bar);
+          wrapper.appendChild(avatar);
+          wrapper.appendChild(barWrapper);
+          wrapper.appendChild(label);
+          leaderboardEl.appendChild(wrapper);
+        });
       }
-    ];
+
+      async function fetchData() {
+        try {
+          // Adjust the URL to match where your proxy is serving the API
+          const response = await fetch('/api/leaderboard');
+          if (!response.ok) {
+            throw new Error('Network response was not ok.');
+          }
+          const liveData = await response.json();
+          // Process and display the live data
+          displayLeaderboard(liveData);
+
+        } catch (error) {
+          console.error('Fetch error:', error);
+          console.log('Using mock data as fallback.');
+          // Mock data as fallback
+          const leaderboardData = [
+                {
+                  profile: {
+                    displayName: "Miner Mike",
+                    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=1"
+                  },
+                  masterpiecePoints: 7500
+                },
+                {
+                  profile: {
+                    displayName: "Driller Dave",
+                    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=2"
+                  },
+                  masterpiecePoints: 6200
+                },
+                {
+                  profile: {
+                    displayName: "Sweaty Steve",
+                    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=3"
+                  },
+                  masterpiecePoints: 5400
+                }
+              ];
+          displayLeaderboard(leaderboardData);
+        },
+
+
+
+
+
+
+
+
+
+
 
     const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
 
@@ -464,7 +531,7 @@ listItem.innerHTML = `
     try {
       showStatus('Loading leaderboard data...');
 
-      const response = await fetch(API_URL, {
+      const response = await fetch('/graphql', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
