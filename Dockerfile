@@ -12,5 +12,8 @@ RUN npm install
 # Copy the rest of the app
 COPY . .
 
+RUN ls -R /app
+# Expose the port the app runs on
+
 # Run the app
 CMD ["npm", "start"]
