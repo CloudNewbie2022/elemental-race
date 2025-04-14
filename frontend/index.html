@@ -311,6 +311,13 @@
         leaderboardData.forEach(player => {
           const wrapper = document.createElement('div');
           wrapper.className = 'player-bar';
+          leaderboardData
+          .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
+          .slice(0, 10)
+          .forEach(player => {
+          // render logic here
+        });
+
 
           const avatar = document.createElement('img');
           avatar.className = 'avatar';
@@ -339,7 +346,7 @@
         });
       }
 
-      
+
    
   async function fetchData() {
     try {
