@@ -384,10 +384,11 @@
     const leaderboardEl = document.getElementById('leaderboard');
     leaderboardEl.innerHTML = ''; // Clear any previous entries
 
-    leaderboardData.forEach(player => {
+    leaderboardData.slicce(0,10).forEach(player => {
       const wrapper = document.createElement('div');
       wrapper.className = 'player-bar';
 
+      
       const avatar = document.createElement('img');
       avatar.className = 'avatar';
       avatar.src = player.profile.avatarUrl;
