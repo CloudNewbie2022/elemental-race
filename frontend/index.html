@@ -300,10 +300,13 @@
           console.error('No leaderboard data')
           return
         }
+
+
         const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
         const leaderboardEl = document.getElementById('leaderboard');
         //Remove the previous leaderboard entries if they exist
         leaderboardEl.innerHTML = '';
+
 
         leaderboardData.forEach(player => {
           const wrapper = document.createElement('div');
@@ -331,6 +334,12 @@
           leaderboardEl.appendChild(wrapper);
         });
       }
+
+
+      const liveData = await response.json();
+      const leaderboardData = liveData.data.masterpiece.leaderboard;
+      displayLeaderboard(leaderboardData);
+
 
       async function fetchData() {
         try {
