@@ -1,10 +1,16 @@
 FROM node:18
 
-WORKDIR /app/proxy-server
+# Set working directory to the root of your project
+WORKDIR /app
 
-COPY proxy-server/package*.json ./
+# Copy package.json and package-lock.json from the root
+COPY package*.json ./
+
+# Install dependencies
 RUN npm install
 
-COPY proxy-server/ ./
+# Copy the rest of the app
+COPY . .
 
-CMD ["node", "server.js"]
+# Run the app
+CMD ["npm", "start"]
