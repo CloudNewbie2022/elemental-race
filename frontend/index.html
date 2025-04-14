@@ -238,7 +238,7 @@
       flex-shrink: 0;
     }
     .player-bar .bar {
-      background-image: url('asset/generative-art=1.gif'); /* Replace with your looping AI art */
+      background-image: url('asset/generative-art=2.gif'); /* Replace with your looping AI art */
       background-size: cover;
       height: 40px;
       border-radius: 8px;
@@ -303,7 +303,7 @@
             query: `
               query {
                 masterpiece(id: 110) {
-                  leaderboard {
+                  leaderboard(first: 10) {
                     profile {
                       displayName
                       avatarUrl
