@@ -315,6 +315,10 @@
           const avatar = document.createElement('img');
           avatar.className = 'avatar';
           avatar.src = player.profile.avatarUrl;
+          avatar.src = player.profile.avatarUrl || 'asset/default-avatar.png';
+          avatar.onerror = () => {
+          avatar.src = 'asset/default-avatar.png';
+      };
 
           const barWrapper = document.createElement('div');
           barWrapper.className = 'bar-wrapper';
@@ -387,6 +391,10 @@
       const avatar = document.createElement('img');
       avatar.className = 'avatar';
       avatar.src = player.profile.avatarUrl;
+      avatar.src = player.profile.avatarUrl || 'asset/default-avatar.png';
+      avatar.onerror = () => {
+      avatar.src = 'asset/default-avatar.png';
+    };
 
       const barWrapper = document.createElement('div');
       barWrapper.className = 'bar-wrapper';
