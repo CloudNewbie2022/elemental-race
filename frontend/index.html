@@ -294,57 +294,49 @@
     </div>
   </div>
   <script>
-      // Function to display the leaderboard
-      function displayLeaderboard(leaderboardData) {
-        if(leaderboardData.length == 0){
-          console.error('No leaderboard data')
-          return
-        }
+     function displayLeaderboard(leaderboardData) {
+  if (!leaderboardData || leaderboardData.length === 0) {
+    console.error('No leaderboard data');
+    return;
+  }
 
+  const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
+  const leaderboardEl = document.getElementById('leaderboard');
+  leaderboardEl.innerHTML = ''; // Clear previous entries
 
-        const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
-        const leaderboardEl = document.getElementById('leaderboard');
-        //Remove the previous leaderboard entries if they exist
-        leaderboardEl.innerHTML = '';
+  leaderboardData
+    .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
+    .slice(0, 10)
+    .forEach(player => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'player-bar';
 
-
-        leaderboardData.forEach(player => {
-          const wrapper = document.createElement('div');
-          wrapper.className = 'player-bar';
-          leaderboardData
-          .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
-          .slice(0, 10)
-          .forEach(player => {
-          // render logic here
-        });
-
-
-          const avatar = document.createElement('img');
-          avatar.className = 'avatar';
-          avatar.src = player.profile.avatarUrl;
-          avatar.src = player.profile.avatarUrl || 'asset/default-avatar.png';
-          avatar.onerror = () => {
-          avatar.src = 'asset/default-avatar.png';
+      const avatar = document.createElement('img');
+      avatar.className = 'avatar';
+      avatar.src = player.profile.avatarUrl || 'asset/default-avatar.png';
+      avatar.onerror = () => {
+        avatar.src = 'asset/default-avatar.png';
       };
 
-          const barWrapper = document.createElement('div');
-          barWrapper.className = 'bar-wrapper';
+      const barWrapper = document.createElement('div');
+      barWrapper.className = 'bar-wrapper';
 
-          const bar = document.createElement('div');
-          bar.className = 'bar';
-          bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
 
-          const label = document.createElement('div');
-          label.className = 'label';
-          label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
+      const label = document.createElement('div');
+      label.className = 'label';
+      label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
 
-          barWrapper.appendChild(bar);
-          wrapper.appendChild(avatar);
-          wrapper.appendChild(barWrapper);
-          wrapper.appendChild(label);
-          leaderboardEl.appendChild(wrapper);
-        });
-      }
+      barWrapper.appendChild(bar);
+      wrapper.appendChild(avatar);
+      wrapper.appendChild(barWrapper);
+      wrapper.appendChild(label);
+      leaderboardEl.appendChild(wrapper);
+    });
+}
+
 
 
    
