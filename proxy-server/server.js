@@ -8,7 +8,7 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-app.use(express.static(path.join(__dirname, '../publish'))); // Serve frontend
+app.use(express.static(path.join(__dirname, '../frontend'))); // Serve frontend
 app.use('/public', express.static(path.join(__dirname, '../publish/asset'))); // Serve assets
 app.use(express.json());
 
@@ -28,6 +28,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Accept', 'X-Requested-With', 'Authorization']
 }));
 
+<<<<<<< HEAD
 // Explicitly handle OPTIONS preflight
 app.options('/graphql', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -35,6 +36,10 @@ app.options('/graphql', (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.status(200).send(); // Send a 200 OK response
 });
+=======
+// Static file support (if needed)
+app.use('/static', express.static(path.join(__dirname, 'frontend')));
+>>>>>>> 089e2f0 (using new web chat instead of reg chat)
 
 // Proxy endpoint
 app.post('/graphql', async (req, res) => {
