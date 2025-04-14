@@ -339,16 +339,16 @@
   
       leaderboardData
         .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints) // Sort by points
-        .slice(0, 10) // Limit to top 10
+        .slice(0, 20) // Limit to top 10
         .forEach(player => {
           const wrapper = document.createElement('div');
           wrapper.className = 'player-bar';
   
           const avatar = document.createElement('img');
           avatar.className = 'avatar';
-          avatar.src = player.profile.avatarUrl || 'asset/default-avatar.png';
+          avatar.src = player.profile.avatarUrl || 'asset/default-avatar.webp';
           avatar.onerror = () => {
-            avatar.src = 'asset/default-avatar.png';
+            avatar.src = 'asset/default-avatar.webp';
           };
   
           const barWrapper = document.createElement('div');
