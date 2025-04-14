@@ -335,75 +335,39 @@
         });
       }
 
-
-      const liveData = await response.json();
-      const leaderboardData = liveData.data.masterpiece.leaderboard;
-      displayLeaderboard(leaderboardData);
-
-
+      
       async function fetchData() {
-        try {
-          // Adjust the URL to match where your proxy is serving the API
-          const response = await fetch('/graphql', { // Changed to POST
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              // Add other headers if needed
-            },
-            body: JSON.stringify({
-              query: `
-                query {
-                  masterpiece(id: 110) {
-                    leaderboard {
-                      profile {
-                        displayName
-                          avatarUrl
-                      }           
-                      masterpiecePoints
-                    }
-                  }
+  try {
+    const response = await fetch('/graphql', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: `
+          query {
+            masterpiece(id: 110) {
+              leaderboard {
+                profile {
+                  displayName
+                  avatarUrl
                 }
-              `
-            })  
-
-          });
-          if (!response.ok) {
-            throw new Error('Network response was not ok.');
+                masterpiecePoints
+              }
+            }
           }
-          const liveData = await response.json();
-          // Process and display the live data
-          displayLeaderboard(liveData.data.leaderboard);
+        `
+      })
+    });
 
-        } catch (error) {
-          console.error('Fetch error:', error);
-          console.log('Using mock data as fallback.');
-          // Mock data as fallback
-          const leaderboardData = [
-                {
-                  profile: {
-                    displayName: "Miner Mike",
-                    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=1"
-                  },
-                  masterpiecePoints: 7500
-                },
-                {
-                  profile: {
-                    displayName: "Driller Dave",
-                    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=2"
-                  },
-                  masterpiecePoints: 6200
-                },
-                {
-                  profile: {
-                    displayName: "Sweaty Steve",
-                    avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=3"
-                  },
-                  masterpiecePoints: 5400
-                }
-              ];
-          displayLeaderboard(leaderboardData);
-        }
-      }
+    if (!response.ok) throw new Error('Network response was not ok.');
+
+    const liveData = await response.json();
+    const leaderboardData = liveData.data.masterpiece.leaderboard;
+
+    displayLeaderboard(leaderboardData);
+  } catch (error) {
+    console.error('Fetch error:', error);
+  }
+      
 
       fetchData();
   </script>
