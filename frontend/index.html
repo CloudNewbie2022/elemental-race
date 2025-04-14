@@ -384,7 +384,7 @@
     const leaderboardEl = document.getElementById('leaderboard');
     leaderboardEl.innerHTML = ''; // Clear any previous entries
 
-    leaderboardData.slicce(0,10).forEach(player => {
+    leaderboardData.slice(0,10).forEach(player => {
       const wrapper = document.createElement('div');
       wrapper.className = 'player-bar';
 
