@@ -28,7 +28,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Accept', 'X-Requested-With', 'Authorization']
 }));
 
-<<<<<<< HEAD
+
 // Explicitly handle OPTIONS preflight
 app.options('/graphql', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -39,7 +39,7 @@ app.options('/graphql', (req, res) => {
 =======
 // Static file support (if needed)
 app.use('/static', express.static(path.join(__dirname, 'frontend')));
->>>>>>> 089e2f0 (using new web chat instead of reg chat)
+
 
 // Proxy endpoint
 app.post('/graphql', async (req, res) => {
