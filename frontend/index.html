@@ -341,17 +341,22 @@
               'Content-Type': 'application/json',
               // Add other headers if needed
             },
-            body: JSON.stringify({ query: `
-          query {
-            leaderboard {
-              profile {
-                displayName
-                avatarUrl
-              }
-              masterpiecePoints
-            }
-          }
-        `})
+            body: JSON.stringify({
+              query: `
+                query {
+                  masterpiece(id: 110) {
+                    leaderboard {
+                      profile {
+                        displayName
+                          avatarUrl
+                      }           
+                      masterpiecePoints
+                    }
+                  }
+                }
+              `
+            })  
+
           });
           if (!response.ok) {
             throw new Error('Network response was not ok.');
