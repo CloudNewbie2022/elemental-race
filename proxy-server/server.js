@@ -36,7 +36,8 @@ app.options('/graphql', (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.status(200).send(); // Send a 200 OK response
 });
-=======
+
+
 // Static file support (if needed)
 app.use('/static', express.static(path.join(__dirname, 'frontend')));
 
