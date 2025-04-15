@@ -296,37 +296,38 @@
   <script>
     async function fetchData() {
       try {
-        const response = await fetch('/graphql', {
+        const response = await fetch('/graphql',{
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            query: `
-              query {
-                masterpiece(id: 110) {
-                  leaderboard(first: 10) {
-                    profile {
-                      displayName
-                      avatarUrl
-                    }
-                    masterpiecePoints
-                  }
-                }
-              }
-            `
-          })
+           query: `
+            query {
+             masterpiece(id: 110) {
+               leaderboard {
+                 profile {
+                  displayName
+                   avatarUrl
+                 }
+                 masterpiecePoints
+               }
+             }
+           }
+           `
+      })
         });
   
-        if (!response.ok) throw new Error('Network response was not ok.');
-  
-        const liveData = await response.json();
-        const leaderboardData = liveData.data.masterpiece.leaderboard;
-  
-        displayLeaderboard(leaderboardData);
-      } catch (error) {
-        console.error('Fetch error:', error);
-      }
-    }
-  
+      const response = await fetch('/graphql', { ... });
+
+      if (!response.ok) throw new Error('Network response was not ok.');
+
+      const liveData = await response.json();
+      const leaderboardData = liveData.data.masterpiece.leaderboard
+      .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
+      .slice(0, 10); // Get top 10
+
+      displayLeaderboard(leaderboardData); // ✅ Now call it once
+
+
     function displayLeaderboard(leaderboardData) {
       if (!leaderboardData || leaderboardData.length === 0) {
         console.error('No leaderboard data');
