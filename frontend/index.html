@@ -296,38 +296,39 @@
   <script>
     async function fetchData() {
       try {
-        const response = await fetch('/graphql',{
+        const response = await fetch('/graphql', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-           query: `
-            query {
-             masterpiece(id: 110) {
-               leaderboard {
-                 profile {
-                  displayName
-                   avatarUrl
-                 }
-                 masterpiecePoints
-               }
-             }
-           }
-           `
-      })
+            query: `
+              query {
+                masterpiece(id: 110) {
+                  leaderboard {
+                    profile {
+                      displayName
+                      avatarUrl
+                    }
+                    masterpiecePoints
+                  }
+                }
+              }
+            `
+          })
         });
   
-      const response = await fetch('/graphql', { ... });
-
-      if (!response.ok) throw new Error('Network response was not ok.');
-
-      const liveData = await response.json();
-      const leaderboardData = liveData.data.masterpiece.leaderboard
-      .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
-      .slice(0, 10); // Get top 10
-
-      displayLeaderboard(leaderboardData); // ✅ Now call it once
-
-
+        if (!response.ok) throw new Error('Network response was not ok.');
+  
+        const liveData = await response.json();
+        const leaderboardData = liveData.data.masterpiece.leaderboard
+          .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
+          .slice(0, 10); // Top 10 only
+  
+        displayLeaderboard(leaderboardData); // ✅ Single call
+      } catch (error) {
+        console.error('Fetch error:', error);
+      }
+    }
+  
     function displayLeaderboard(leaderboardData) {
       if (!leaderboardData || leaderboardData.length === 0) {
         console.error('No leaderboard data');
@@ -336,39 +337,36 @@
   
       const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
       const leaderboardEl = document.getElementById('leaderboard');
-      leaderboardEl.innerHTML = ''; // Clear any previous entries
+      leaderboardEl.innerHTML = ''; // Clear existing
   
-      leaderboardData
-        .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints) // Sort by points
-        .slice(0, 10) // Limit to top 10
-        .forEach(player => {
-          const wrapper = document.createElement('div');
-          wrapper.className = 'player-bar';
+      leaderboardData.forEach(player => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'player-bar';
   
-          const avatar = document.createElement('img');
-          avatar.className = 'avatar';
-          avatar.src = player.profile.avatarUrl || 'asset/default-avatar.webp';
-          avatar.onerror = () => {
-            avatar.src = 'asset/default-avatar.webp';
-          };
+        const avatar = document.createElement('img');
+        avatar.className = 'avatar';
+        avatar.src = player.profile.avatarUrl || 'asset/default-avatar.webp';
+        avatar.onerror = () => {
+          avatar.src = 'asset/default-avatar.webp';
+        };
   
-          const barWrapper = document.createElement('div');
-          barWrapper.className = 'bar-wrapper';
+        const barWrapper = document.createElement('div');
+        barWrapper.className = 'bar-wrapper';
   
-          const bar = document.createElement('div');
-          bar.className = 'bar';
-          bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
   
-          const label = document.createElement('div');
-          label.className = 'label';
-          label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
+        const label = document.createElement('div');
+        label.className = 'label';
+        label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
   
-          barWrapper.appendChild(bar);
-          wrapper.appendChild(avatar);
-          wrapper.appendChild(barWrapper);
-          wrapper.appendChild(label);
-          leaderboardEl.appendChild(wrapper);
-        });
+        barWrapper.appendChild(bar);
+        wrapper.appendChild(avatar);
+        wrapper.appendChild(barWrapper);
+        wrapper.appendChild(label);
+        leaderboardEl.appendChild(wrapper);
+      });
     }
   
     document.addEventListener('DOMContentLoaded', fetchData);
