@@ -7,6 +7,60 @@
   <title>Angry Dynomites Leaderboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
   <style>
+
+
+
+
+
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.6);
+}
+.modal-content {
+  background: #1a1a1a;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%;
+  color: white;
+}
+.close-button {
+  float: right;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.player-bar::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  background: rgba(0,0,0,0.8);
+  color: white;
+  padding: 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.player-bar:hover::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+
+
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       max-width: 1000px;
@@ -157,6 +211,8 @@
       margin: 30px 0;
       gap: 15px;
     }
+
+
     button {
       padding: 10px 20px;
       background-color: #3498db;
@@ -256,6 +312,17 @@
       font-size: 1rem;
     }
   </style>
+
+<div id="playerModal" class="modal">
+  <div class="modal-content">
+    <span class="close-button">&times;</span>
+    <div id="modalProfileContent">
+      <!-- Full profile info goes here -->
+    </div>
+  </div>
+</div>
+
+
 </head>
 <body>
   <h1>Angry Dynomites Leaderboard</h1>
@@ -268,12 +335,19 @@
     <button id="updateChartSize">Update Chart Size</button>
   </section>
   
-  <canvas id="leaderboardChart" width="800" height="400"></canvas>
-  
 
+  <div class="controls">
+    <button id="toggleView">Show Friends Only</button>
+    <label for="timeframe">Timeframe:</label>
+    <select id="timeframe">
+      <option value="daily">Daily</option>
+      <option value="weekly">Weekly</option>
+      <option value="all">All-time</option>
+    </select>
+  </div>
 
   <button onclick="window.location.href='Local-leaderboard.html'">
-    View Current Leaderboard
+    View Local Leaderboard
   </button>
   
 
@@ -338,52 +412,76 @@
 }
 
   
-    function displayLeaderboard(leaderboardData) {
-      if (!leaderboardData || leaderboardData.length === 0) {
-        console.error('No leaderboard data');
-        return;
-      }
-  
-      const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
-      const leaderboardEl = document.getElementById('leaderboard');
-      leaderboardEl.innerHTML = ''; // Clear existing
-  
-      leaderboardData.forEach(player => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'player-bar';
-  
-        const avatar = document.createElement('img');
-        avatar.className = 'avatar';
+function displayLeaderboard(leaderboardData) {
+  if (!leaderboardData || leaderboardData.length === 0) return;
 
-        const isValidAvatar = player.profile.avatarUrl && player.profile.avatarUrl.startsWith('http');
-        avatar.src = isValidAvatar ? player.profile.avatarUrl : '/default-avatar.jpg';
+  const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
+  const leaderboardEl = document.getElementById('leaderboard');
+  leaderboardEl.innerHTML = '';
 
-        avatar.onerror = () => {
-          if (avatar.src !== '/default-avatar.jpg') {
-           avatar.src = '/default-avatar.jpg';
-          }
-        };
+  leaderboardData.forEach(player => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'player-bar';
+    wrapper.setAttribute('data-tooltip', `Streak: 5 days | Tier: Gold | Last Active: 3h ago`);
 
-  
-        const barWrapper = document.createElement('div');
-        barWrapper.className = 'bar-wrapper';
-  
-        const bar = document.createElement('div');
-        bar.className = 'bar';
-        bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
-  
-        const label = document.createElement('div');
-        label.className = 'label';
-        label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
-  
-        barWrapper.appendChild(bar);
-        wrapper.appendChild(avatar);
-        wrapper.appendChild(barWrapper);
-        wrapper.appendChild(label);
-        leaderboardEl.appendChild(wrapper);
-      });
-    }
-  
-    document.addEventListener('DOMContentLoaded', fetchData);
-  </script>
+    const avatar = document.createElement('img');
+    avatar.className = 'avatar';
+    avatar.src = player.profile.avatarUrl || '/default-avatar.jpg';
+
+    const barWrapper = document.createElement('div');
+    barWrapper.className = 'bar-wrapper';
+
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
+
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
+
+    barWrapper.appendChild(bar);
+    wrapper.appendChild(avatar);
+    wrapper.appendChild(barWrapper);
+    wrapper.appendChild(label);
+    leaderboardEl.appendChild(wrapper);
+
+    wrapper.addEventListener('click', () => {
+      const modal = document.getElementById('playerModal');
+      const modalContent = document.getElementById('modalProfileContent');
+      modalContent.innerHTML = `
+        <h2>${player.profile.displayName}</h2>
+        <p>Points: ${player.masterpiecePoints}</p>
+        <p>Tier: Gold</p>
+        <p>Streak: 5 days</p>
+        <p>Last Active: 3 hours ago</p>
+      `;
+      modal.style.display = 'block';
+    });
+  });
+}
+
+ document.addEventListener('DOMContentLoaded', fetchData);
+
+ document.querySelector('.close-button').addEventListener('click', () => {
+  document.getElementById('playerModal').style.display = 'none';
+});
+window.addEventListener('click', e => {
+  if (e.target.id === 'playerModal') {
+    document.getElementById('playerModal').style.display = 'none';
+  }
+});
+document.getElementById('toggleView').addEventListener('click', function () {
+  const friendsOnly = this.textContent.includes('Friends');
+  this.textContent = friendsOnly ? 'Show Global' : 'Show Friends Only';
+  // Add logic to toggle between global/friends here
+});
+document.getElementById('timeframe').addEventListener('change', function () {
+  const timeframe = this.value;
+  // Add logic to filter leaderboard by timeframe here
+});
+
+
+
+
+</script>
   
