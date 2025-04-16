@@ -238,7 +238,7 @@
       flex-shrink: 0;
     }
     .player-bar .bar {
-      background-image: url('asset/generative-art=2.gif'); /* Replace with your looping AI art */
+      background-image: url('asset/generative-art=3.gif'); /* Replace with your looping AI art */
       background-size: cover;
       height: 40px;
       border-radius: 8px;
@@ -309,8 +309,8 @@
           body: JSON.stringify({
             query: `
               query {
-                masterpiece(id: 110) {
-                  leaderboard {
+                masterpiece(id: 114) {
+                  leaderboard({limit: 10}, sort: "masterpiecePoints:desc") {
                     profile {
                       displayName
                       avatarUrl
@@ -352,10 +352,16 @@
   
         const avatar = document.createElement('img');
         avatar.className = 'avatar';
-        avatar.src = player.profile.avatarUrl || 'asset/default-avatar.webp';
+
+        const isValidAvatar = player.profile.avatarUrl && player.profile.avatarUrl.startsWith('http');
+        avatar.src = isValidAvatar ? player.profile.avatarUrl : 'asset/default-avatar.webp';
+
         avatar.onerror = () => {
-          avatar.src = 'asset/default-avatar.webp';
+          if (avatar.src !== 'asset/default-avatar.webp') {
+           avatar.src = 'asset/default-avatar.webp';
+          }
         };
+
   
         const barWrapper = document.createElement('div');
         barWrapper.className = 'bar-wrapper';
