@@ -301,40 +301,42 @@
   </div>
 
   <script>
-    async function fetchData() {
-      try {
-        const response = await fetch('/graphql', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query: `
-              query {
-                masterpiece(id: 114) {
-                  leaderboard {
-                    profile {
-                      displayName
-                      avatarUrl
-                    }
-                    masterpiecePoints
-                  }
+ async function fetchData() {
+  try {
+    const response = await fetch('https://elemental-race.onrender.com/graphql', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: `
+          query {
+            masterpiece(id: 114) {
+              leaderboard {
+                profile {
+                  displayName
+                  avatarUrl
                 }
+                masterpiecePoints
               }
-            `
-          })
-        });
-  
-        if (!response.ok) throw new Error('Network response was not ok.');
-  
-        const liveData = await response.json();
-        const leaderboardData = liveData.data.masterpiece.leaderboard
-          .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
-          .slice(0, 10); // Top 10 only
-  
-        displayLeaderboard(leaderboardData); // ✅ Single call
-      } catch (error) {
-        console.error('Fetch error:', error);
-      }
-    }
+            }
+          }
+        `
+      })
+    });
+
+    if (!response.ok) throw new Error('Network response was not ok');
+
+    const liveData = await response.json();
+
+    const leaderboardData = liveData.data.masterpiece.leaderboard
+      .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
+      .slice(0, 10);
+
+    displayLeaderboard(leaderboardData);
+  } catch (error) {
+    console.error('Fetch error:', error);
+  }
+}
+
   
     function displayLeaderboard(leaderboardData) {
       if (!leaderboardData || leaderboardData.length === 0) {
