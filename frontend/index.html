@@ -354,11 +354,11 @@
         avatar.className = 'avatar';
 
         const isValidAvatar = player.profile.avatarUrl && player.profile.avatarUrl.startsWith('http');
-        avatar.src = isValidAvatar ? player.profile.avatarUrl : '/default-avatar.webp';
+        avatar.src = isValidAvatar ? player.profile.avatarUrl : '/default-avatar.jpg';
 
         avatar.onerror = () => {
-          if (avatar.src !== '/default-avatar.webp') {
-           avatar.src = '/default-avatar.webp';
+          if (avatar.src !== '/default-avatar.jpg') {
+           avatar.src = '/default-avatar.jpg';
           }
         };
 
