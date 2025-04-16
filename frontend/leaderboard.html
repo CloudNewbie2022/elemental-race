@@ -1,106 +1,177 @@
+<!-- Cleaned Up Leaderboard UI for Angry Dynomites -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Current Leaderboard</title>
+  <title>Angry Dynomites Leaderboard</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    h1 { margin-bottom: 20px; }
-    #leaderboard { margin-top: 20px; }
-    .entry { margin-bottom: 10px; }
-    .back-button { margin-top: 30px; }
+    body {
+      background-color: #1e1e1e;
+      font-family: 'Orbitron', sans-serif;
+      color: #fff;
+      margin: 0;
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+      color: #f39c12;
+      margin-bottom: 2rem;
+    }
+    .controls, .back-button {
+      display: flex;
+      justify-content: center;
+      margin: 1.5rem 0;
+      gap: 15px;
+    }
+    input, button {
+      padding: 10px;
+      font-weight: bold;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .leaderboard-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .player-bar {
+      display: flex;
+      align-items: center;
+      background-color: #2c2c2c;
+      border: 2px solid #8e44ad;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 1rem;
+    }
+    .player-bar .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      margin-right: 1rem;
+    }
+    .bar-wrapper {
+      flex-grow: 1;
+      background-color: #3b3b3b;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-right: 1rem;
+    }
+    .bar-wrapper .bar {
+      background-image: url('asset/generative-art-3.gif');
+      background-size: cover;
+      height: 40px;
+      transition: width 0.6s ease;
+    }
+    .label {
+      white-space: nowrap;
+      font-size: 1rem;
+    }
+    #leaderboard {
+      margin-top: 1rem;
+    }
+    .loading, .error {
+      text-align: center;
+      padding: 1rem;
+      font-size: 1.2rem;
+      font-style: italic;
+    }
+    .error {
+      color: #e74c3c;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-  <h1>Current Leaderboard</h1>
-  <div id="leaderboard">Loading...</div>
-  <button class="back-button" onclick="window.location.href='original.html'">Back to Main Page</button>
+  <h1>Angry Dynomites Leaderboard</h1>
 
-  <script src="leaderboard.js"></script>
+  
+  <canvas id="leaderboardChart" width="800" height="400"></canvas>
+  <section class="controls">
+    <label for="chartWidth">Width:</label>
+    <input type="number" id="chartWidth" value="800" min="300" max="1600">
+    <label for="chartHeight">Height:</label>
+    <input type="number" id="chartHeight" value="400" min="200" max="1000">
+    <button id="updateChartSize">Update Chart Size</button>
+  </section>
+
+  
+
+  <div class="back-button">
+    <button onclick="window.location.href='Local-leaderboard.html'">View Current Leaderboard</button>
+  </div>
+
+  <div class="leaderboard-container" id="leaderboard">Loading...</div>
+
+  <script>
+    async function fetchLeaderboard() {
+      try {
+        const response = await fetch('/graphql', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: `query { masterpiece(id: 114) { leaderboard { profile { displayName avatarUrl } masterpiecePoints } } }`
+          })
+        });
+
+        if (!response.ok) throw new Error('Network response was not ok.');
+
+        const data = await response.json();
+        const leaderboardData = data.data.masterpiece.leaderboard
+          .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
+          .slice(0, 10);
+
+        displayLeaderboard(leaderboardData);
+      } catch (error) {
+        document.getElementById('leaderboard').innerHTML = '<div class="error">Failed to load leaderboard.</div>';
+        console.error('Fetch error:', error);
+      }
+    }
+
+    function displayLeaderboard(players) {
+      const container = document.getElementById('leaderboard');
+      container.innerHTML = '';
+      const maxPoints = Math.max(...players.map(p => p.masterpiecePoints));
+
+      players.forEach(player => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'player-bar';
+
+        const avatar = document.createElement('img');
+        avatar.className = 'avatar';
+        avatar.src = player.profile.avatarUrl || 'asset/default-avatar.webp';
+        avatar.onerror = () => avatar.src = 'asset/default-avatar.webp';
+
+        const barWrapper = document.createElement('div');
+        barWrapper.className = 'bar-wrapper';
+
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
+
+        const label = document.createElement('div');
+        label.className = 'label';
+        label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
+
+        barWrapper.appendChild(bar);
+        wrapper.appendChild(avatar);
+        wrapper.appendChild(barWrapper);
+        wrapper.appendChild(label);
+        container.appendChild(wrapper);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchLeaderboard);
+  </script>
 </body>
 </html>
-<script>
-  async function fetchCurrentLeaderboard() {
-    try {
-      const response = await fetch('/graphql', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: `
-            query {
-              masterpieces(filter: { eventId: null }) {
-                id
-                name
-                leaderboard {
-                  profile {
-                    displayName
-                    avatarUrl
-                  }
-                  masterpiecePoints
-                }
-              }
-            }
-          `
-        })
-      });
-
-      if (!response.ok) throw new Error('Network response was not ok.');
-
-      const liveData = await response.json();
-      const masterpieces = liveData.data.masterpieces;
-
-      if (!masterpieces || masterpieces.length === 0) {
-        console.error('No active masterpieces with null eventId');
-        return;
-      }
-
-      // Optionally grab the first one
-      const leaderboardData = masterpieces[0].leaderboard
-        .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
-        .slice(0, 10); // Top 10
-
-      displayLeaderboard(leaderboardData);
-    } catch (error) {
-      console.error('Fetch error:', error);
-    }
-  }
-
-  function displayLeaderboard(leaderboardData) {
-    const leaderboardEl = document.getElementById('leaderboard');
-    leaderboardEl.innerHTML = '';
-
-    const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
-
-    leaderboardData.forEach(player => {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'player-bar';
-
-      const avatar = document.createElement('img');
-      avatar.className = 'avatar';
-      avatar.src = player.profile.avatarUrl || 'asset/default-avatar.webp';
-      avatar.onerror = () => {
-        avatar.src = 'asset/default-avatar.webp';
-      };
-
-      const barWrapper = document.createElement('div');
-      barWrapper.className = 'bar-wrapper';
-
-      const bar = document.createElement('div');
-      bar.className = 'bar';
-      bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
-
-      const label = document.createElement('div');
-      label.className = 'label';
-      label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
-
-      barWrapper.appendChild(bar);
-      wrapper.appendChild(avatar);
-      wrapper.appendChild(barWrapper);
-      wrapper.appendChild(label);
-      leaderboardEl.appendChild(wrapper);
-    });
-  }
-
-  document.addEventListener('DOMContentLoaded', fetchCurrentLeaderboard);
-</script>
