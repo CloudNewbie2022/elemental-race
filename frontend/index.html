@@ -300,20 +300,35 @@
   </div>
 
   <script>
+
+
+
+
  async function fetchData() {
   try {
-    await fetch('https://elemental-race.onrender.com/graphql', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    query: `query { masterpiece(id: 114) { leaderboard { profile { displayName avatarUrl } masterpiecePoints } } }`
-  })
-});
+    const response = await fetch('https://elemental-race.onrender.com/graphql', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: `
+          query {
+            masterpiece(id: 114) {
+              leaderboard {
+                profile {
+                  displayName
+                  avatarUrl
+                }
+                masterpiecePoints
+              }
+            }
+          }
+        `
+      })
+    });
 
     if (!response.ok) throw new Error('Network response was not ok');
 
     const liveData = await response.json();
-
     const leaderboardData = liveData.data.masterpiece.leaderboard
       .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
       .slice(0, 10);
@@ -323,6 +338,7 @@
     console.error('Fetch error:', error);
   }
 }
+
 
   
     function displayLeaderboard(leaderboardData) {
@@ -343,11 +359,11 @@
         avatar.className = 'avatar';
 
         const isValidAvatar = player.profile.avatarUrl && player.profile.avatarUrl.startsWith('http');
-        avatar.src = isValidAvatar ? player.profile.avatarUrl : '/default-avatar.jpg';
+        avatar.src = isValidAvatar ? player.profile.avatarUrl : '/default-avatar.gif';
 
         avatar.onerror = () => {
-          if (avatar.src !== '/default-avatar.jpg') {
-           avatar.src = '/default-avatar.jpg';
+          if (avatar.src !== '/default-avatar.gif') {
+           avatar.src = '/default-avatar.gif';
           }
         };
 

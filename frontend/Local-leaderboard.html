@@ -149,8 +149,8 @@
 
         const avatar = document.createElement('img');
         avatar.className = 'avatar';
-        avatar.src = player.profile.avatarUrl || 'asset/default-avatar.jpg';
-        avatar.onerror = () => avatar.src = '/default-avatar.jpg';
+        avatar.src = player.profile.avatarUrl || '/default-avatar.gif';
+        avatar.onerror = () => avatar.src = '/default-avatar.gif';
 
         const barWrapper = document.createElement('div');
         barWrapper.className = 'bar-wrapper';
