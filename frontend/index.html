@@ -358,9 +358,19 @@
         const avatar = document.createElement('img');
         avatar.className = 'avatar';
 
-        const isValidAvatar = player.profile.avatarUrl && player.profile.avatarUrl.startsWith('http');
-        avatar.src = isValidAvatar ? player.profile.avatarUrl : '/public/default-avatar.gif';
+        const avatarUrl = player.profile.avatarUrl;
 
+        const isValidAvatar =
+       avatarUrl &&
+        (avatarUrl.startsWith('http') || avatarUrl.startsWith('ipfs://'));
+
+        avatar.src = isValidAvatar
+       ? avatarUrl.replace('ipfs://', 'https://ipfs.io/ipfs/')
+        : '/public/default-avatar.gif';
+
+
+
+        
         avatar.onerror = () => {
           if (avatar.src !== 'public/default-avatar.gif') {
            avatar.src = 'public/default-avatar.gif';
