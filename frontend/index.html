@@ -307,10 +307,10 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         query: `
-          query 
+          query {
             masterpiece(id: 114) {
               leaderboard {
-                profile 
+                profile {
                   displayName
                   avatarUrl
                 }
@@ -319,7 +319,6 @@
             }
           }
         `
-        
       })
     });
 
