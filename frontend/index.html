@@ -302,25 +302,13 @@
   <script>
  async function fetchData() {
   try {
-    const response = await fetch('https://elemental-race.onrender.com/graphql', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        query: `
-          query {
-            masterpiece(id: 114) {
-              leaderboard {
-                profile {
-                  displayName
-                  avatarUrl
-                }
-                masterpiecePoints
-              }
-            }
-          }
-        `
-      })
-    });
+    await fetch('https://elemental-race.onrender.com/graphql', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    query: `query { masterpiece(id: 114) { leaderboard { profile { displayName avatarUrl } masterpiecePoints } } }`
+  })
+});
 
     if (!response.ok) throw new Error('Network response was not ok');
 
