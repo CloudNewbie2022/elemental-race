@@ -359,11 +359,11 @@
         avatar.className = 'avatar';
 
         const isValidAvatar = player.profile.avatarUrl && player.profile.avatarUrl.startsWith('http');
-        avatar.src = isValidAvatar ? player.profile.avatarUrl : '/default-avatar.gif';
+        avatar.src = isValidAvatar ? player.profile.avatarUrl : '/public/default-avatar.gif';
 
         avatar.onerror = () => {
-          if (avatar.src !== '/default-avatar.gif') {
-           avatar.src = '/default-avatar.gif';
+          if (avatar.src !== 'public/default-avatar.gif') {
+           avatar.src = 'public/default-avatar.gif';
           }
         };
 
