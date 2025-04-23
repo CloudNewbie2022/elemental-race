@@ -18,7 +18,7 @@
       max-width: 1000px;
       margin: 0 auto;
     }
-    .player-bar {
+    .player-bar { 
       display: flex;
       align-items: center;
       margin-bottom: 1.5rem;
@@ -93,6 +93,33 @@
       padding: 20px;
       font-weight: bold;
     }
+
+
+
+  /* ... existing styles ... */
+
+  .bar {
+    opacity: 0;
+    animation: fadeInBar 0.6s ease-out forwards;
+  }
+
+  @keyframes fadeInBar {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+
+  
+
+
+
+
   </style>
 </head>
 <body>
@@ -121,20 +148,39 @@
 
 
 
-  <script>
 
-async function updateLeaderboardTitle() {
+
+
+
+
+
+
+
+
+
+
+//* Refresh Button */
+
+<button id="refresh-btn">🔁 Refresh Leaderboard</button>
+
+
+
+
+
+<script>
+
+
+
+async function getLatestMasterpieceId() {
   try {
     const response = await fetch('https://elemental-race.onrender.com/graphql', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // Include any necessary authentication headers here
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         query: `
           query {
             masterpiece {
+              id
               name
             }
           }
@@ -143,22 +189,21 @@ async function updateLeaderboardTitle() {
     });
 
     const result = await response.json();
-    const title = result?.data?.masterpiece?.name;
-
-    if (title) {
-      document.querySelector('h1').textContent = `${title} Leaderboard`;
-    }
-  } catch (error) {
-    console.error('Failed to fetch leaderboard name:', error);
+    const masterpiece = result?.data?.masterpiece;
+    return masterpiece;
+  } catch (err) {
+    console.error('❌ Error fetching latest masterpiece:', err);
+    return null;
   }
 }
 
-// Call the function to update the leaderboard title
-updateLeaderboardTitle();
+async function fetchDataAndUpdate() {
+  const masterpiece = await getLatestMasterpieceId();
+  if (!masterpiece?.id) return;
 
+  // Update the title
+  document.querySelector('h1').textContent = `${masterpiece.name} Leaderboard`;
 
-
- async function fetchData() {
   try {
     const response = await fetch('https://elemental-race.onrender.com/graphql', {
       method: 'POST',
@@ -166,7 +211,7 @@ updateLeaderboardTitle();
       body: JSON.stringify({
         query: `
           query {
-            masterpiece(id: 114) {
+            masterpiece(id: ${masterpiece.id}) {
               leaderboard {
                 profile {
                   displayName
@@ -180,90 +225,66 @@ updateLeaderboardTitle();
       })
     });
 
-    if (!response.ok) throw new Error('Network response was not ok');
-
-    const liveData = await response.json();
-    const leaderboardData = liveData.data.masterpiece.leaderboard
+    const data = await response.json();
+    const leaderboard = data?.data?.masterpiece?.leaderboard ?? [];
+    const top10 = leaderboard
       .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
       .slice(0, 10);
 
-    displayLeaderboard(leaderboardData);
+    displayLeaderboard(top10);
   } catch (error) {
-    console.error('Fetch error:', error);
+    console.error('❌ Fetch leaderboard error:', error);
   }
 }
 
+function displayLeaderboard(leaderboardData) {
+  const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
+  const leaderboardEl = document.getElementById('leaderboard');
+  leaderboardEl.innerHTML = '';
 
-  
-    function displayLeaderboard(leaderboardData) {
-      if (!leaderboardData || leaderboardData.length === 0) {
-        console.error('No leaderboard data');
-        return;
+  leaderboardData.forEach(player => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'player-bar';
+
+    const avatar = document.createElement('img');
+    avatar.className = 'avatar';
+    const avatarUrl = player.profile.avatarUrl;
+
+    const isValidAvatar =
+      avatarUrl && (avatarUrl.startsWith('http') || avatarUrl.startsWith('ipfs://'));
+
+    avatar.src = isValidAvatar
+      ? avatarUrl.replace('ipfs://', 'https://ipfs.io/ipfs/')
+      : '/public/default-avatar.gif';
+
+    avatar.onerror = () => {
+      if (avatar.src !== 'public/default-avatar.gif') {
+        avatar.src = 'public/default-avatar.gif';
       }
-  
-      const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
-      const leaderboardEl = document.getElementById('leaderboard');
-      leaderboardEl.innerHTML = ''; // Clear existing
-  
-      leaderboardData.forEach(player => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'player-bar';
-  
-        const avatar = document.createElement('img');
-        avatar.className = 'avatar';
+    };
 
-        const avatarUrl = player.profile.avatarUrl;
+    const barWrapper = document.createElement('div');
+    barWrapper.className = 'bar-wrapper';
 
-        const isValidAvatar =
-       avatarUrl &&
-        (avatarUrl.startsWith('http') || avatarUrl.startsWith('ipfs://'));
+    const bar = document.createElement('div');
+    bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
+    bar.style.backgroundImage = "url('/asset/generative-art=1.gif')";
+    bar.style.backgroundSize = "cover";
 
-        avatar.src = isValidAvatar
-       ? avatarUrl.replace('ipfs://', 'https://ipfs.io/ipfs/')
-        : '/public/default-avatar.gif';
+    const label = document.createElement('div');
+    label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
 
+    barWrapper.appendChild(bar);
+    wrapper.appendChild(avatar);
+    wrapper.appendChild(barWrapper);
+    wrapper.appendChild(label);
+    leaderboardEl.appendChild(wrapper);
+  });
+}
 
+// Button listener
+document.getElementById('refresh-btn').addEventListener('click', fetchDataAndUpdate);
 
-
-        avatar.onerror = () => {
-          if (avatar.src !== 'public/default-avatar.gif') {
-           avatar.src = 'public/default-avatar.gif';
-          }
-        };
-
-
-  
-        const barWrapper = document.createElement('div');
-        barWrapper.className = 'bar-wrapper';
-  
-        const bar = document.createElement('div');
-        bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
-        bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
-  
-
-        bar.style.backgroundImage = "url('/asset/generative-art=1.gif')";
-        bar.style.backgroundSize = "cover";
-
-
-
-        const label = document.createElement('div');
-        label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
-        label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
-  
-        barWrapper.appendChild(bar);
-        wrapper.appendChild(avatar);
-        wrapper.appendChild(barWrapper);
-        wrapper.appendChild(label);
-        leaderboardEl.appendChild(wrapper);
-
-
-
-
-      });
-    }
-  
-    
-
-
-    document.addEventListener('DOMContentLoaded', fetchData);
-  </script>
+// Initial load
+document.addEventListener('DOMContentLoaded', fetchDataAndUpdate);
+</script>
