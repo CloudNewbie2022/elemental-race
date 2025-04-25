@@ -8,6 +8,10 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 
+
+
+
+
 app.use(express.json());
 
 // Log all incoming requests
@@ -37,7 +41,7 @@ app.options('/graphql', (req, res) => {
 
 
 // Static file support (if needed)
-app.use('/static', express.static(path.join(__dirname, 'frontend')));
+app.use('/asset', express.static(path.join(__dirname, 'asset')));
 
 
 // Proxy endpoint
