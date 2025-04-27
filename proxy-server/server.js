@@ -78,8 +78,99 @@ app.post('/graphql', async (req, res) => {
   }
 });
 
+
+
+
+
+
+
+
+
+
+
 // Static file support (if needed)
 app.use('/static', express.static(path.join(__dirname, 'asset')));
+
+
+
+
+
+
+// --- Snapshot and Highlight Management (non-intrusive) ---
+
+const fs = require('fs');
+
+// Directories for snapshots and highlights
+const SNAPSHOT_DIR = path.join(__dirname, 'snapshots');
+const HIGHLIGHT_DIR = path.join(__dirname, 'highlights');
+
+// Ensure folders exist
+if (!fs.existsSync(SNAPSHOT_DIR)) fs.mkdirSync(SNAPSHOT_DIR);
+if (!fs.existsSync(HIGHLIGHT_DIR)) fs.mkdirSync(HIGHLIGHT_DIR);
+
+// API: Save a new snapshot
+app.post('/api/save-snapshot', (req, res) => {
+  const snapshot = req.body;
+
+  if (!snapshot || !snapshot.leaderboard) {
+    return res.status(400).json({ error: 'Invalid snapshot data' });
+  }
+
+  const timestamp = Date.now();
+  const filename = `snapshot-${timestamp}.json`;
+  const filepath = path.join(SNAPSHOT_DIR, filename);
+
+  fs.writeFile(filepath, JSON.stringify(snapshot, null, 2), (err) => {
+    if (err) {
+      console.error('❌ Error saving snapshot:', err);
+      return res.status(500).json({ error: 'Failed to save snapshot' });
+    }
+    console.log(`✅ Snapshot saved: ${filename}`);
+    res.json({ message: 'Snapshot saved', filename });
+  });
+});
+
+
+
+// API: Get the latest snapshots (up to 50)
+app.get('/api/latest-snapshots', (req, res) => {
+  fs.readdir(SNAPSHOT_DIR, (err, files) => {
+    if (err) {
+      console.error('❌ Error reading snapshot directory:', err);
+      return res.status(500).json({ error: 'Failed to load snapshots' });
+    }
+
+    const snapshotFiles = files
+      .filter(file => file.endsWith('.json'))
+      .sort();
+
+    const latestSnapshots = snapshotFiles.slice(-50);
+
+    const snapshotPromises = latestSnapshots.map(filename => {
+      const filepath = path.join(SNAPSHOT_DIR, filename);
+      return fs.promises.readFile(filepath, 'utf-8').then(content => ({
+        filename,
+        data: JSON.parse(content)
+      }));
+    });
+
+    Promise.all(snapshotPromises)
+      .then(results => {
+        res.json(results);
+      })
+      .catch(err => {
+        console.error('❌ Error loading snapshot files:', err);
+        res.status(500).json({ error: 'Failed to load snapshots' });
+      });
+  });
+});
+
+
+
+
+
+
+
 
 // Start
 app.listen(PORT, () => {
