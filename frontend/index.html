@@ -54,7 +54,7 @@
       overflow: hidden;
     }
     .player-bar .bar {
-      background-image: url('asset/generative-art=3.gif');
+      background-image: url('asset/generative-art=2.gif');
       background-size: cover;
       height: 60px;
       border-radius: 8px;
@@ -179,6 +179,37 @@
   z-index: 2;
 }
 
+
+/* --- New Neutral Highlight Behind Avatar --- */
+.avatar-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.avatar-wrapper::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: 50px;
+  height: 50px;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+  border-radius: 50%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* --- Avatar Rolling and Shrinking Effect --- */
+.avatar {
+  position: relative;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  transition: transform 0.2s ease, width 0.2s ease, height 0.2s ease;
+}
+
+
+
 @keyframes dropIn {
   from {
     top: -80px;
@@ -253,9 +284,6 @@
 
 
 <script>
-
-
-
 
 
 
@@ -358,11 +386,17 @@
     }
 
     // Avatar
-    const avatar = document.createElement('img');
+    const avatarWrapper = document.createElement('div');
+avatarWrapper.className = 'avatar-wrapper';
+
+const avatar = document.createElement('img');
 avatar.className = 'avatar';
 
+avatarWrapper.appendChild(avatar);
+
+
 let avatarUrl = player.profile.avatarUrl ?? ''; // safe fallback if null
-let avatarSrc = 'asset/default-avatar.png';   // default image
+let avatarSrc = 'asset/default-avatar.gif';   // default image
 
 if (avatarUrl.startsWith('ipfs://')) {
   avatarSrc = avatarUrl.replace('ipfs://', 'https://ipfs.io/ipfs/');
@@ -376,8 +410,29 @@ avatar.src = avatarSrc;
 
 // Always fallback if loading fails
 avatar.onerror = () => {
-  avatar.src = 'asset/default-avatar.png';
+  avatar.src = 'asset/default-avatar.gif';
 };
+
+
+
+avatarWrapper.addEventListener('mousemove', (e) => {
+  const rect = avatarWrapper.getBoundingClientRect();
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+  const offsetX = e.offsetX - centerX;
+  const offsetY = e.offsetY - centerY;
+
+  // Rotate and shrink
+  avatar.style.transform = `
+    scale(0.85)
+    rotateX(${offsetY * 0.2}deg)
+    rotateY(${offsetX * 0.2}deg)
+  `;
+});
+
+avatarWrapper.addEventListener('mouseleave', () => {
+  avatar.style.transform = 'scale(1) rotateX(0) rotateY(0)';
+});
 
 
     avatar.addEventListener('mousemove', (e) => {
@@ -405,7 +460,7 @@ avatar.addEventListener('mouseleave', () => {
 
     // Append everything
     barWrapper.appendChild(bar);
-    barWrapper.appendChild(avatar);     
+    barWrapper.appendChild(avatarWrapper);     
     wrapper.appendChild(barWrapper);
     wrapper.appendChild(label);
     leaderboardEl.appendChild(wrapper);
