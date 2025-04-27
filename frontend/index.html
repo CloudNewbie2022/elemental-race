@@ -1,233 +1,164 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <link rel="icon" href="favicon.ico?v2" type="image/x-icon">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Angry Dynomites Leaderboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
-  <style>
-    body {
-      background-color: #1e1e1e;
-      font-family: 'Orbitron', sans-serif;
-      color: #fff;
-      margin: 0;
-      padding: 2rem;
-    }
-    .leaderboard-container {
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-    .player-bar { 
-      display: flex;
-      align-items: center;
-      margin-bottom: 1.5rem;
-      background-color: #2c2c2c;
-      border: 2px solid #8e44ad;
-      border-radius: 10px;
-      padding: 10px;
-      position: relative;
-      overflow: hidden;
-    }
-    .player-bar .label {
-      max-width: 120px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      margin-right: 1rem;
-      font-size: 1rem;
-      font-weight: bold;
-    }
-    .player-bar .avatar {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      margin-right: 1rem;
-      flex-shrink: 0;
-      border: 2px solid transparent;
-      transition: box-shadow 0.3s, border 0.3s;
-    }
-    .player-bar .bar-wrapper {
-      flex-grow: 1;
-      background-color: #3b3b3b;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .player-bar .bar {
-      background-image: url('asset/generative-art=2.gif');
-      background-size: cover;
-      height: 60px;
-      border-radius: 8px;
-      transition: width 0.6s ease;
-    }
-
-    /* Top 3 Styles */
-    .player-bar.first .avatar:hover {
-      border-color: #f1c40f;
-      box-shadow: 0 0 15px #f1c40f;
-    }
-    .player-bar.second .avatar:hover {
-      border-color: #bdc3c7;
-      box-shadow: 0 0 15px #bdc3c7;
-    }
-    .player-bar.third .avatar:hover {
-      border-color: #cd7f32;
-      box-shadow: 0 0 15px #cd7f32;
-    }
-    .player-bar.first .bar {
-      height: 80px;
-    }
-
-    .highlight {
-      animation: highlight 2s;
-    }
-
-    @keyframes highlight {
-      0% { background-color: rgba(46, 204, 113, 0.5); }
-      100% { background-color: #2c2c2c; }
-    }
-
-    .error {
-      color: #e74c3c;
-      text-align: center;
-      padding: 20px;
-      font-weight: bold;
-    }
-
-    .player-bar[data-rank="4"]:hover,
-  .player-bar[data-rank="5"]:hover {
-  border: 2px solid rgba(105, 96, 96, 0.096);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-  transition: all 0.2s ease-in-out;
+<style>
+  body {
+    background-color: #1e1e1e;
+    font-family: 'Orbitron', sans-serif;
+    color: #fff;
+    margin: 0;
+    padding: 2rem;
   }
-
-
-  .hoverable:hover {
-  background-color: rgb(233, 2, 2);
-  color: black;
-  transform: scale(1.03);
-  border-color: #999;
-}
-
-.hoverable:hover {
-  background-color: rgba(87, 189, 138, 0.164);
-  color: black;
-  transform: scale(1.03);
-  border-color: #999;
-}
-
-.player-bar.hoverable:hover {
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
-  transition: all 0.2s ease-in-out;
-}
-
-.avatar {
-  border: 2px solid red !important;
-  background-color: white;
-  opacity: 1 !important;
-  transform: translateY(0) !important;
-}
-
-
-
-/* new avatar stuff */
-.bar-wrapper {
-  position: relative;
-  height: 69px;
-  overflow: visible;
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  transform: translateY(-100px);
-  opacity: 0;
-  animation: dropToBar 0.8s ease-out forwards;
-  z-index: 3;
-  pointer-events: auto;
-  transition: transform 0.25s ease;
-}
-
-@keyframes dropToBar {
-  from {
-    transform: translateY(-100px);
+  
+  .leaderboard-container {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
+  /* 🧩 Player Bar Styles */
+  .player-bar {
+    background: linear-gradient(135deg, #2c2c2c, #1a1a1a);
+    border: 2px solid #8e44ad;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
     opacity: 0;
+    transform: translateY(-50px);
+    animation: dropIn 0.6s ease forwards;
   }
-  to {
-    transform: translateY(0);
-    opacity: 1;
+  
+  /* Special Top 3 Styles */
+  .player-bar.first {
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    border: 3px solid gold;
+    animation: pulseGold 2s infinite alternate, dropIn 0.6s ease forwards;
   }
-}
-
-.avatar:hover {
-  transform: translateY(0) rotate(10deg) translateX(15px);
-}
-
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  position: relative;
-  animation: dropIn 0.5s ease-out forwards;
-  transition: transform 0.2s ease;
-  z-index: 2;
-}
-
-
-/* --- New Neutral Highlight Behind Avatar --- */
-.avatar-wrapper {
-  position: relative;
-  display: inline-block;
-}
-
-.avatar-wrapper::before {
-  content: '';
-  position: absolute;
-  top: -5px;
-  left: -5px;
-  width: 50px;
-  height: 50px;
-  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
-  border-radius: 50%;
-  z-index: 1;
-  pointer-events: none;
-}
-
-/* --- Avatar Rolling and Shrinking Effect --- */
-.avatar {
-  position: relative;
-  z-index: 2;
-  width: 40px;
-  height: 40px;
-  transition: transform 0.2s ease, width 0.2s ease, height 0.2s ease;
-}
-
-
-
-@keyframes dropIn {
-  from {
-    top: -80px;
-    opacity: 0;
+  
+  .player-bar.second {
+    background: linear-gradient(135deg, #c0c0c0, #808080);
+    border: 3px solid silver;
+    animation: pulseSilver 2s infinite alternate, dropIn 0.6s ease forwards;
   }
-  to {
-    top: 0;
-    opacity: 1;
+  
+  .player-bar.third {
+    background: linear-gradient(135deg, #cd7f32, #8b4513);
+    border: 3px solid #cd7f32;
+    animation: pulseBronze 2s infinite alternate, dropIn 0.6s ease forwards;
   }
-}
-
-  /* ... existing styles ... */
-
+  
+  /* Hover for Regular Players */
+  .player-bar.hoverable:hover {
+    background: linear-gradient(135deg, #8e44ad, #2c3e50);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+    transform: scale(1.03);
+    transition: all 0.2s ease-in-out;
+  }
+  
+  /* Top 3 Avatar Hover */
+  .player-bar.first .avatar:hover {
+    border-color: gold;
+    box-shadow: 0 0 15px gold;
+  }
+  
+  .player-bar.second .avatar:hover {
+    border-color: silver;
+    box-shadow: 0 0 15px silver;
+  }
+  
+  .player-bar.third .avatar:hover {
+    border-color: #cd7f32;
+    box-shadow: 0 0 15px #cd7f32;
+  }
+  
+  /* 🎯 Label */
+  .label {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 1rem;
+    font-size: 1rem;
+    font-weight: bold;
+  }
+  
+  /* 📊 Bar Wrapper */
+  .bar-wrapper {
+    flex-grow: 1;
+    background-color: rgba(50, 56, 56, 0.25);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    height: 60px;
+  }
+  
+  /* 📈 Bar Fill */
   .bar {
+    background-image: url('asset/generative-art=2.gif');
+    background-size: cover;
+    height: 100%;
+    border-radius: 8px;
     opacity: 0;
     animation: fadeInBar 0.6s ease-out forwards;
   }
-
+  
+  /* 🎞️ Avatars */
+  .avatar-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    perspective: 800px;
+  }
+  
+  .avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+    transform-style: preserve-3d;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+    position: relative;
+    opacity: 1;
+    animation: dropIn 0.5s ease-out forwards;
+    z-index: 2;
+  }
+  
+  /* Hover Animation for Avatar */
+  .avatar-wrapper:hover .avatar {
+    transform: scale(0.85) rotateX(5deg) rotateY(5deg);
+  }
+  
+  /* --- Avatar Shine --- */
+  .avatar-wrapper::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    width: 70px;
+    height: 70px;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  /* 🏆 Animations */
+  @keyframes dropIn {
+    0% {
+      opacity: 0;
+      transform: translateY(-50px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
   @keyframes fadeInBar {
     from {
       opacity: 0;
@@ -238,15 +169,54 @@
       transform: translateY(0);
     }
   }
-
-
   
-
-
+  @keyframes pulseGold {
+    0% {
+      box-shadow: 0 0 10px gold, 0 0 20px gold;
+      transform: scale(1);
+    }
+    100% {
+      box-shadow: 0 0 20px gold, 0 0 40px gold;
+      transform: scale(1.02);
+    }
+  }
+  
+  @keyframes pulseSilver {
+    0% {
+      box-shadow: 0 0 10px silver, 0 0 20px silver;
+      transform: scale(1);
+    }
+    100% {
+      box-shadow: 0 0 20px silver, 0 0 40px silver;
+      transform: scale(1.02);
+    }
+  }
+  
+  @keyframes pulseBronze {
+    0% {
+      box-shadow: 0 0 10px #cd7f32, 0 0 20px #cd7f32;
+      transform: scale(1);
+    }
+    100% {
+      box-shadow: 0 0 20px #cd7f32, 0 0 40px #cd7f32;
+      transform: scale(1.02);
+    }
+  }
+  </style>
+  
+  <select id="time-window-selector">
+    <option value="3600000">Last Hour</option>        <!-- 1 hour -->
+    <option value="14400000">Last 4 Hours</option>     <!-- 4 hours -->
+    <option value="28800000">Last 8 Hours</option>     <!-- 8 hours -->
+    <option value="86400000">Last 24 Hours</option>    <!-- 1 day -->
+    <option value="604800000">Last 7 Days</option>     <!-- 1 week -->
+  </select>
+  
 
   </style>
 </head>
 <body>
+
   <h1 style="text-align:center; color:#f39c12; margin-bottom: 30px;">Angry Dynomites Leaderboard</h1>
 
   <div class="leaderboard-container" id="leaderboard">
@@ -316,6 +286,14 @@
     }
   }
   
+
+  function filterByTimeWindow(players, timeWindowMs) {
+  const now = Date.now();
+  return players.filter(player => (now - player.timestamp) <= timeWindowMs);
+}
+
+
+
   async function fetchDataAndUpdate() {
     const masterpiece = await getLatestMasterpieceId();
     if (!masterpiece?.id) return;
@@ -348,16 +326,28 @@
       const leaderboard = data?.data?.masterpiece?.leaderboard ?? [];
       const top10 = leaderboard
         .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
-        .slice(0, 10);
-  
+        .slice(0, 10)
+        .map(player => ({
+          ...player,
+          timestamp: Date.now() // Add timestamp for each player
+        }));
+
       displayLeaderboard(top10);
       updateLastRefreshedTime(); // ✅ NEW
     } catch (error) {
       console.error('❌ Fetch leaderboard error:', error);
     }
   }
-  
+
+
+
+
+
+
+
   function displayLeaderboard(leaderboardData) {
+
+
   const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
   const leaderboardEl = document.getElementById('leaderboard');
   leaderboardEl.innerHTML = '';
@@ -367,6 +357,10 @@
     const wrapper = document.createElement('div');
     wrapper.className = 'player-bar';
     wrapper.setAttribute('data-rank', rank); // Optional: useful for CSS selectors
+   
+   // sequential animation delay
+    wrapper.style.animationDelay = `${index * 0.5}s`;
+
 
     // Rank-specific classes
     if (rank === 1) {
@@ -385,26 +379,25 @@
       wrapper.classList.add('hoverable'); // For your new neutral glow
     }
 
-    // Avatar
-    const avatarWrapper = document.createElement('div');
+
+
+
+// Avatar
+const avatarWrapper = document.createElement('div');
 avatarWrapper.className = 'avatar-wrapper';
 
 const avatar = document.createElement('img');
 avatar.className = 'avatar';
-
 avatarWrapper.appendChild(avatar);
 
-
-let avatarUrl = player.profile.avatarUrl ?? ''; // safe fallback if null
-let avatarSrc = 'asset/default-avatar.gif';   // default image
+let avatarUrl = player.profile.avatarUrl ?? '';
+let avatarSrc = 'asset/default-avatar.gif';
 
 if (avatarUrl.startsWith('ipfs://')) {
   avatarSrc = avatarUrl.replace('ipfs://', 'https://ipfs.io/ipfs/');
 } else if (avatarUrl.startsWith('http')) {
   avatarSrc = avatarUrl;
 }
-
-console.log('🎯 Avatar URL:', player.profile.displayName, avatarUrl);
 
 avatar.src = avatarSrc;
 
@@ -413,36 +406,24 @@ avatar.onerror = () => {
   avatar.src = 'asset/default-avatar.gif';
 };
 
-
-
+// 🎯 Fix: Only wrapper controls movement!
 avatarWrapper.addEventListener('mousemove', (e) => {
   const rect = avatarWrapper.getBoundingClientRect();
   const centerX = rect.width / 2;
   const centerY = rect.height / 2;
-  const offsetX = e.offsetX - centerX;
-  const offsetY = e.offsetY - centerY;
+  const offsetX = e.clientX - rect.left - centerX;
+  const offsetY = e.clientY - rect.top - centerY;
 
-  // Rotate and shrink
+  // Rotate and shrink smoothly
   avatar.style.transform = `
     scale(0.85)
-    rotateX(${offsetY * 0.2}deg)
+    rotateX(${offsetY * -0.2}deg)
     rotateY(${offsetX * 0.2}deg)
   `;
 });
 
 avatarWrapper.addEventListener('mouseleave', () => {
-  avatar.style.transform = 'scale(1) rotateX(0) rotateY(0)';
-});
-
-
-    avatar.addEventListener('mousemove', (e) => {
-  const offsetX = e.offsetX - avatar.offsetWidth / 2;
-  const offsetY = e.offsetY - avatar.offsetHeight / 2;
-  avatar.style.transform = `translate(${offsetX * 0.3}px, ${offsetY * 0.3}px) rotate(${offsetX * 0.1}deg)`;
-});
-
-avatar.addEventListener('mouseleave', () => {
-  avatar.style.transform = 'translate(0, 0)';
+  avatar.style.transform = 'scale(1) rotateX(0deg) rotateY(0deg)';
 });
 
 
@@ -459,7 +440,7 @@ avatar.addEventListener('mouseleave', () => {
     label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
 
     // Append everything
-    barWrapper.appendChild(bar);
+   
     barWrapper.appendChild(avatarWrapper);     
     wrapper.appendChild(barWrapper);
     wrapper.appendChild(label);
@@ -486,6 +467,9 @@ avatar.addEventListener('mouseleave', () => {
   
   // 🎯 Button listener
   document.getElementById('refresh-btn').addEventListener('click', fetchDataAndUpdate);
+  
+
+
   
   // 🚀 Initial load
   document.addEventListener('DOMContentLoaded', fetchDataAndUpdate);
