@@ -54,7 +54,7 @@
       overflow: hidden;
     }
     .player-bar .bar {
-      background-image: url('frontend/asset/generative-art=1.gif');
+      background-image: url('asset/generative-art=3.gif');
       background-size: cover;
       height: 60px;
       border-radius: 8px;
@@ -359,21 +359,25 @@
 
     // Avatar
     const avatar = document.createElement('img');
-    avatar.className = 'avatar';
-    const avatarUrl = player.profile.avatarUrl;
-    const isValidAvatar = avatarUrl && (avatarUrl.startsWith('http') || avatarUrl.startsWith('ipfs://'));
+avatar.className = 'avatar';
 
-    console.log('🎯 Avatar URL:', player.profile.displayName, avatarUrl);
+let avatarUrl = player.profile.avatarUrl ?? ''; // safe fallback if null
+let avatarSrc = 'asset/default-avatar.png';   // default image
 
-    avatar.src = isValidAvatar
-      ? avatarUrl.replace('ipfs://', 'https://ipfs.io/ipfs/')
-      : '/public/default-avatar.gif';
+if (avatarUrl.startsWith('ipfs://')) {
+  avatarSrc = avatarUrl.replace('ipfs://', 'https://ipfs.io/ipfs/');
+} else if (avatarUrl.startsWith('http')) {
+  avatarSrc = avatarUrl;
+}
 
-    avatar.onerror = () => {
-      if (avatar.src !== '/public/default-avatar.gif') {
-        avatar.src = '/public/default-avatar.gif';
-      }
-    };
+console.log('🎯 Avatar URL:', player.profile.displayName, avatarUrl);
+
+avatar.src = avatarSrc;
+
+// Always fallback if loading fails
+avatar.onerror = () => {
+  avatar.src = 'asset/default-avatar.png';
+};
 
 
     avatar.addEventListener('mousemove', (e) => {
@@ -393,7 +397,7 @@ avatar.addEventListener('mouseleave', () => {
 
     const bar = document.createElement('div');
     bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
-    bar.style.backgroundImage = "url('asset/generative-art=1.gif')";
+    bar.style.backgroundImage = "url('asset/generative-art=2.gif')";
     bar.style.backgroundSize = "cover";
 
     const label = document.createElement('div');
