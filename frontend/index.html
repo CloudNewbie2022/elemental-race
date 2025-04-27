@@ -204,6 +204,40 @@
   }
   </style>
   
+  <style>
+    .fade-in {
+      animation: fadeIn 0.5s ease-in forwards;
+    }
+    
+    .fade-out {
+      animation: fadeOut 0.5s ease-out forwards;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+    }
+    </style>
+    
+
+
   <select id="time-window-selector">
     <option value="3600000">Last Hour</option>        <!-- 1 hour -->
     <option value="14400000">Last 4 Hours</option>     <!-- 4 hours -->
@@ -356,6 +390,7 @@
     const rank = index + 1; // Define rank FIRST
     const wrapper = document.createElement('div');
     wrapper.className = 'player-bar';
+    wrapper.classList.add('fade-in'); // Add fade-in class
     wrapper.setAttribute('data-rank', rank); // Optional: useful for CSS selectors
    
    // sequential animation delay
