@@ -1,0 +1,112 @@
+<script>
+    let snapshots = [];
+    let currentFrame = 0;
+    let leaderboardState = {};  // Track animated player states
+    let animationFrameId = null;
+    
+    async function loadSnapshots(masterpieceId) {
+      try {
+        const response = await fetch(`http://localhost:8080/api/highlight-snapshots/${masterpieceId}`);
+        snapshots = await response.json();
+        console.log('📸 Loaded snapshots:', snapshots);
+        startReplay();
+      } catch (err) {
+        console.error('❌ Error loading highlight snapshots:', err);
+      }
+    }
+    
+    function startReplay() {
+      if (!snapshots.length) return;
+    
+      currentFrame = 0;
+      animateFrame();
+    }
+    
+    function animateFrame() {
+      if (currentFrame >= snapshots.length) {
+        currentFrame = 0; // Loop back to start (optional)
+      }
+    
+      const snapshot = snapshots[currentFrame];
+      updateLeaderboard(snapshot.data.leaderboard);
+    
+      currentFrame++;
+      setTimeout(() => {
+        requestAnimationFrame(animateFrame);
+      }, 1500); // Slow down between frames (adjustable speed)
+    }
+    
+    function updateLeaderboard(newLeaderboard) {
+      const container = document.getElementById('leaderboard');
+    
+      // Sort descending by points
+      newLeaderboard.sort((a, b) => b.masterpiecePoints - a.masterpiecePoints);
+    
+      // Animate each player
+      newLeaderboard.forEach((player, index) => {
+        const playerId = player.profile.displayName;
+    
+        if (!leaderboardState[playerId]) {
+          leaderboardState[playerId] = {
+            points: 0,
+            rank: index
+          };
+        }
+    
+        // Smooth point transition
+        const startPoints = leaderboardState[playerId].points;
+        const endPoints = player.masterpiecePoints;
+        const startTime = performance.now();
+        const duration = 800; // 0.8 second transition
+    
+        function animatePoints() {
+          const now = performance.now();
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+    
+          const currentPoints = Math.floor(startPoints + (endPoints - startPoints) * progress);
+    
+          // Update HTML
+          const playerElement = document.getElementById(`player-${playerId}`);
+          if (playerElement) {
+            playerElement.querySelector('.points').textContent = `${currentPoints} pts`;
+          }
+    
+          if (progress < 1) {
+            requestAnimationFrame(animatePoints);
+          } else {
+            leaderboardState[playerId].points = endPoints; // Save final state
+          }
+        }
+    
+        animatePoints();
+        leaderboardState[playerId].rank = index;
+      });
+    
+      // Smooth re-render leaderboard
+      renderLeaderboard();
+    }
+    
+    function renderLeaderboard() {
+      const container = document.getElementById('leaderboard');
+      container.innerHTML = '';
+    
+      // Sort by current rank
+      const sortedPlayers = Object.entries(leaderboardState).sort((a, b) => a[1].rank - b[1].rank);
+    
+      sortedPlayers.forEach(([playerId, playerData]) => {
+        const div = document.createElement('div');
+        div.className = 'player-entry';
+        div.id = `player-${playerId}`;
+        div.innerHTML = `
+          <div><strong>${playerId}</strong></div>
+          <div class="points">${playerData.points} pts</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+    
+    // --- Start Replay with Masterpiece ID ---
+    loadSnapshots(116);  // 👈 Change this to your highlighted masterpiece ID
+    </script>
+    
