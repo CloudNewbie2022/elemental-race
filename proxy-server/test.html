@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>🏁 Angry Dynomites Highlight Race with Replay</title>
+  <title>🏁 Angry Dynomites Local Highlight Replay</title>
   <style>
     body {
       background: #1e1e1e;
@@ -64,11 +64,11 @@
 
     .bar {
       height: 100%;
-      width: 0;
+      width: 0%;
       background-image: url('asset/generative-art=2.gif');
       background-size: cover;
       border-radius: 8px;
-      transition: width 1.5s ease-out;
+      transition: width 1s ease-out;
     }
 
     .name-label { width: 120px; margin-left: 10px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -94,7 +94,7 @@
 
 <body>
 
-<h1>🏎️ Angry Dynomites Race Replay</h1>
+<h1>🏎️ Dynomites Local Race Replay</h1>
 <div id="leaderboard"></div>
 <button id="replay-btn" onclick="startRace()">🔁 Replay Race</button>
 
@@ -105,19 +105,14 @@ let frameDuration = 2000;
 let currentSnapshotIndex = 0;
 let totalFrames = 0;
 
-async function loadLatestHighlight() {
-  const res = await fetch('http://localhost:8080/api/latest-highlight-id');
+async function loadSnapshots() {
+  const res = await fetch('highlight.json');
   const data = await res.json();
-  await loadSnapshots(data.masterpieceId);
-}
 
-async function loadSnapshots(masterpieceId) {
-  const res = await fetch(`http://localhost:8080/api/highlight-snapshots/${masterpieceId}`);
-  let allShots = await res.json();
-  if (allShots.length > 20) {
-    snapshots = allShots.slice(-20); // Keep last 20 frames max
+  if (data.length > 20) {
+    snapshots = data.slice(-20); // Max 20 frames
   } else {
-    snapshots = allShots;
+    snapshots = data;
   }
   totalFrames = snapshots.length;
   startRace();
@@ -214,8 +209,8 @@ function animateBars() {
     const pointsEl = div.querySelector('.points');
     const posBtn = div.querySelector('.position-button');
 
-    bar.style.width = Math.min((player.targetPoints / 10000) * 100, 100) + '%';
-    pointsEl.innerText = Math.floor(player.targetPoints) + ' pts';
+    bar.style.width = Math.min((player.targetPoints / 8000000) * 100, 100) + '%';
+    pointsEl.innerText = player.targetPoints.toLocaleString() + ' pts';
     posBtn.innerText = player.rank + 1;
 
     div.classList.remove('first', 'second', 'third');
@@ -231,7 +226,7 @@ function parseAvatar(url) {
   return url;
 }
 
-loadLatestHighlight();
+loadSnapshots();
 </script>
 
 </body>

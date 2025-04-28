@@ -260,6 +260,69 @@ app.post('/api/highlight-masterpiece', async (req, res) => {
   }
 });
 
+
+// --- API: Get Latest Highlighted Masterpiece ID ---
+app.get('/api/latest-highlight-id', async (req, res) => {
+  try {
+    const files = await fs.promises.readdir(HIGHLIGHT_DIR);
+
+    const highlightedMasterpieceIds = files
+      .filter(file => file.startsWith('snapshot-') && file.endsWith('.json'))
+      .map(file => {
+        const parts = file.split('-');
+        return parts[1]; // Get masterpieceId part
+      });
+
+    if (highlightedMasterpieceIds.length === 0) {
+      return res.status(404).json({ error: 'No highlights available.' });
+    }
+
+    // Pick the most recent highlight (by filename latest)
+    const latestId = highlightedMasterpieceIds.sort().reverse()[0];
+
+    res.json({ masterpieceId: latestId });
+
+  } catch (err) {
+    console.error('❌ Error getting latest highlight:', err);
+    res.status(500).json({ error: 'Failed to get latest highlight.' });
+  }
+});
+
+
+// --- API to Get All Highlight Snapshots for a Masterpiece ---
+app.get('/api/highlight-snapshots/:masterpieceId', async (req, res) => {
+  const masterpieceId = req.params.masterpieceId;
+
+  try {
+    const files = await fs.promises.readdir(HIGHLIGHT_DIR);
+
+    const matchingFiles = files
+      .filter(file => file.startsWith(`snapshot-${masterpieceId}-`) && file.endsWith('.json'))
+      .sort(); // sort snapshots by filename/time
+
+    if (matchingFiles.length === 0) {
+      return res.status(404).json({ error: 'No highlight snapshots found for this masterpiece.' });
+    }
+
+    const snapshotPromises = matchingFiles.map(filename => {
+      const filepath = path.join(HIGHLIGHT_DIR, filename);
+      return fs.promises.readFile(filepath, 'utf-8').then(content => ({
+        filename,
+        data: JSON.parse(content)
+      }));
+    });
+
+    const snapshots = await Promise.all(snapshotPromises);
+
+    res.json(snapshots);
+
+  } catch (err) {
+    console.error('❌ Error loading highlight snapshots:', err);
+    res.status(500).json({ error: 'Failed to load highlight snapshots.' });
+  }
+});
+
+
 // --- Start Server ---
 app.listen(PORT, () => {
   console.log(`✅ Proxy Server + Snapshot System running at http://localhost:${PORT}`);
