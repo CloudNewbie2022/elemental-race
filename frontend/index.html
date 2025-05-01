@@ -1,586 +1,732 @@
-<style>
-  body {
-    background-color: #1e1e1e;
-    font-family: 'Orbitron', sans-serif;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Angry Dynomites Leaderboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+  
+
+  
+  <style>
+
+    body {
+    background: linear-gradient(to bottom, #1c0d3f, #1b0127);
+    font-family: 'Press Start 2P', monospace;
     color: #fff;
     margin: 0;
     padding: 2rem;
   }
-  
-  .leaderboard-container {
-    max-width: 1000px;
-    margin: 0 auto;
-  }
-  
-  
-
-  /* 🧩 Player Bar Styles */
-  .player-bar {
-    background: linear-gradient(135deg, #2c2c2c, #1a1a1a);
-    border: 2px solid #8e44ad;
-    border-radius: 10px;
-    margin-bottom: 1.5rem;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    opacity: 0;
-    transform: translateY(-50px);
-    animation: dropIn 0.6s ease forwards;
-  }
-
-  /* Special Top 3 Styles */
-  .player-bar.first {
-    background: linear-gradient(135deg, #ffd700, #ff8c00);
-    border: 3px solid gold;
-    animation: pulseGold 2s infinite alternate, dropIn 0.6s ease forwards;
-  }
-  
-  .player-bar.second {
-    background: linear-gradient(135deg, #c0c0c0, #808080);
-    border: 3px solid silver;
-    animation: pulseSilver 2s infinite alternate, dropIn 0.6s ease forwards;
-  }
-  
-  .player-bar.third {
-    background: linear-gradient(135deg, #cd7f32, #8b4513);
-    border: 3px solid #cd7f32;
-    animation: pulseBronze 2s infinite alternate, dropIn 0.6s ease forwards;
-  }
-  
-  /* Hover for Regular Players */
-  .player-bar.hoverable:hover {
-    background: linear-gradient(135deg, #8e44ad, #2c3e50);
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
-    transform: scale(1.03);
-    transition: all 0.2s ease-in-out;
-  }
-  
-  /* Top 3 Avatar Hover */
-  .player-bar.first .avatar:hover {
-    border-color: gold;
-    box-shadow: 0 0 15px gold;
-  }
-  
-  .player-bar.second .avatar:hover {
-    border-color: silver;
-    box-shadow: 0 0 15px silver;
-  }
-  
-  .player-bar.third .avatar:hover {
-    border-color: #cd7f32;
-    box-shadow: 0 0 15px #cd7f32;
-  }
-  
-  /* 🎯 Label */
-  .label {
-    max-width: 120px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin-right: 1rem;
-    font-size: 1rem;
-    font-weight: bold;
-  }
-  
-  /* 📊 Bar Wrapper */
-  .bar-wrapper {
-    flex-grow: 1;
-    background-color: rgba(50, 56, 56, 0.25);
-    border-radius: 8px;
-    overflow: hidden;
-    position: relative;
-    height: 60px;
-  }
-  
-  /* 📈 Bar Fill */
-  .bar {
-    background-image: url('asset/generative-art=2.gif');
-    background-size: cover;
-    height: 100%;
-    border-radius: 8px;
-    opacity: 0;
-    animation: fadeInBar 0.6s ease-out forwards;
-  }
-  
-
-/* 📈 Bar Fill */
-.bar {
-  background-image: url('asset/generative-art=2.gif');
-  background-size: cover;
-  background-repeat: repeat-x; /* ADD THIS */
-  height: 100%;
+    .leaderboard-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .player-bar {
+  position: relative;
+  background: rgba(142, 75, 142, 0.572);
   border-radius: 8px;
-  opacity: 0;
-  animation: fadeInBar 0.01s ease-out forwards, scrollBackground 126s linear infinite; /* ADD scrollBackground animation */
+  margin: 8px 0;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+    @keyframes slideAlong {
+  0% { left: 0%; }
+  100% { left: 100%; }
 }
 
-/* 🏃 Bar Scroll Animation */
-@keyframes scrollBackground {
-  0% { background-position: 0 0; }
-  100% { background-position: 1000px 0; }
-}
-
-
-  /* 🪵 Drawer (Wood Textured Card) */
-  .drawer {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 0;
-    background: url('asset/wood-texture.jpg') center/cover no-repeat;
-    overflow: hidden;
-    border-radius: 10px;
-    box-shadow: 2px 2px 12px rgba(0,0,0,0.6);
-    transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1); /* springy easing */
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 10px;
-    color: #fff;
-  }
-
-  .drawer a {
-    color: #ffd700;
-    text-decoration: none;
-    font-weight: bold;
-    margin-bottom: 8px;
-  }
-
-  /* When Drawer is open */
-  .drawer.open {
-    width: 220px; /* Drawer size */
-  }
-
-  /* 🎯 Make sure the bar-wrapper is relative */
-  .bar-wrapper {
-    position: relative;
-    overflow: visible;
-  }
-
-
-
-
-#spinner {
-  font-size: 2rem;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg);}
-  100% { transform: rotate(360deg);}
-}
-
-
-  
-  /* 🎞️ Avatars */
-  .avatar-wrapper {
-    position: relative;
-    display: inline-block;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    overflow: hidden;
-    perspective: 800px;
-  }
-  
-  .avatar {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    transition: transform 0.2s ease, box-shadow 0.3s ease;
-    transform-style: preserve-3d;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
-    position: relative;
-    opacity: 1;
-    animation: dropIn 0.5s ease-out forwards;
-    z-index: 2;
-  }
-  
-  /* Hover Animation for Avatar */
-  .avatar-wrapper:hover .avatar {
-    transform: scale(0.85) rotateX(5deg) rotateY(5deg);
-  }
-  
-  /* --- Avatar Shine --- */
-  .avatar-wrapper::before {
-    content: '';
-    position: absolute;
-    top: -5px;
-    left: -5px;
-    width: 70px;
-    height: 70px;
-    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 1;
-  }
-  
-  /* 🏆 Animations */
-  @keyframes dropIn {
-    0% {
+    .player-bar.first {
+      background: linear-gradient(135deg, #ffd700, #ff8c00);
+      border: 3px solid gold;
+      animation: pulseGold 2s infinite alternate, dropIn 0.6s ease forwards;
+    }
+    .player-bar.second {
+      background: linear-gradient(135deg, #c0c0c0, #808080);
+      border: 3px solid silver;
+      animation: pulseSilver 2s infinite alternate, dropIn 0.6s ease forwards;
+    }
+    .player-bar.third {
+      background: linear-gradient(135deg, #cd7f32, #8b4513);
+      border: 3px solid #cd7f32;
+      animation: pulseBronze 2s infinite alternate, dropIn 0.6s ease forwards;
+    }
+    .player-bar.hoverable:hover {
+      background: linear-gradient(135deg, #8e44ad, #2c3e50);
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+      transform: scale(1.03);
+    }
+    .player-bar.expanded {
+      box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+      transform: scale(1.05);
+    }
+    .label {
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-right: 1rem;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+    .bar-wrapper {
+      flex-grow: 1;
+      background-color: rgba(50, 56, 56, 0.25);
+      border-radius: 8px;
+      overflow: visible;
+      position: relative;
+      height: 60px;
+    }
+    .bar {
+      background-image: url('asset/generative-art=1.gif');
+      background-size: cover;
+      background-repeat: repeat-x;
+      height: 100%;
+      border-radius: 8px;
       opacity: 0;
-      transform: translateY(-50px);
+      animation: fadeInBar 0.6s ease-out forwards;
     }
-    100% {
+
+.bar-gif {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform-origin: left center;
+  height: 30px;
+  transform: scaleX(1);
+  transition: transform 0.5s ease;
+  pointer-events: none;
+}
+
+
+
+
+    @keyframes scrollBackground {
+      0% { background-position: 0 0; }
+      100% { background-position: 1000px 0; }
+    }
+    .drawer {
+  max-height: 0;
+  overflow: hidden;
+  background: #f8f8f8;
+  border-radius: 0 0 8px 8px;
+  margin-bottom: 8px;
+  padding: 0 16px;
+  transition: max-height 0.5s ease, padding 0.3s ease;
+  transform-origin: top;
+}
+
+.drawer.open {
+  max-height: 200px;
+  padding: 16px;
+}
+
+.drawer-handle {
+  margin-left: 12px;
+  font-size: 18px;
+  cursor: pointer;
+}
+    .drawer-handle:hover {
+      background: rgba(255, 215, 0, 0.5);
+      transform: scale(1.1);
+    }
+    .avatar-wrapper {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      overflow: hidden;
+      perspective: 800px;
+    }
+    .avatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+      transform-style: preserve-3d;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+      position: relative;
       opacity: 1;
-      transform: translateY(0);
+      animation: dropIn 0.5s ease-out forwards;
+      z-index: 2;
     }
+    .avatar-wrapper:hover .avatar {
+      transform: scale(0.85) rotateX(5deg) rotateY(5deg);
+    }
+    .avatar-wrapper::before {
+      content: '';
+      position: absolute;
+      top: -5px;
+      left: -5px;
+      width: 70px;
+      height: 70px;
+      background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1;
+    }
+    #spinner {
+      font-size: 2rem;
+      animation: spin 1s linear infinite;
+    }
+    .fade-in {
+    animation: fadeIn 3s ease-out forwards;
+    opacity: 0;
   }
-  
-  @keyframes fadeInBar {
+
+  .bg-speaker {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 100px;
+    opacity: 0.5;
+    z-index: 1000;
+    cursor: pointer;
+  }
+
+
+  @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(15px);
     }
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
-  
-  @keyframes pulseGold {
-    0% {
-      box-shadow: 0 0 10px gold, 0 0 20px gold;
-      transform: scale(1);
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
     }
-    100% {
-      box-shadow: 0 0 20px gold, 0 0 40px gold;
-      transform: scale(1.02);
+    @keyframes dropIn {
+      0% { opacity: 0; transform: translateY(-50px);}
+      100% { opacity: 1; transform: translateY(0);}
     }
-  }
-  
-  @keyframes pulseSilver {
-    0% {
-      box-shadow: 0 0 10px silver, 0 0 20px silver;
-      transform: scale(1);
+    @keyframes fadeInBar {
+      from { opacity: 0; transform: translateY(10px);}
+      to { opacity: 1; transform: translateY(0);}
     }
-    100% {
-      box-shadow: 0 0 20px silver, 0 0 40px silver;
-      transform: scale(1.02);
+    @keyframes pulseGold {
+      0% { box-shadow: 0 0 10px gold, 0 0 20px gold; transform: scale(1);}
+      100% { box-shadow: 0 0 20px gold, 0 0 40px gold; transform: scale(1.02);}
     }
-  }
-  
-  @keyframes pulseBronze {
-    0% {
-      box-shadow: 0 0 10px #cd7f32, 0 0 20px #cd7f32;
-      transform: scale(1);
+    @keyframes pulseSilver {
+      0% { box-shadow: 0 0 10px silver, 0 0 20px silver; transform: scale(1);}
+      100% { box-shadow: 0 0 20px silver, 0 0 40px silver; transform: scale(1.02);}
     }
-    100% {
-      box-shadow: 0 0 20px #cd7f32, 0 0 40px #cd7f32;
-      transform: scale(1.02);
+    @keyframes pulseBronze {
+      0% { box-shadow: 0 0 10px #cd7f32, 0 0 20px #cd7f32; transform: scale(1);}
+      100% { box-shadow: 0 0 20px #cd7f32, 0 0 40px #cd7f32; transform: scale(1.02);}
     }
-  }
+
+
+/* 🎚️ Full speaker toggle visual styling */
+.toggle {
+  position: fixed;
+  top: 44px;
+  left: 20px;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+  height: 60px;
+}
+
+.toggle-input {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  opacity: 0;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.toggle-handle-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-handle {
+  width: 50px;
+  height: 50px;
+  background: radial-gradient(circle at 70% 30%, #fedee2 4%, #d63534 12% 24%, #a81a1a 50% 65%, #d63534 75%);
+  border-radius: 50%;
+  box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.3);
+  transition: transform 0.24s cubic-bezier(.65, 1.35, .5, 1);
+  transform: rotate(0deg);
+}
+
+.toggle-input:checked + .toggle-handle-wrapper .toggle-handle {
+  transform: rotate(25deg);
+}
+
+.toggle-handle-bar-wrapper {
+  position: absolute;
+  width: 6px;
+  height: 30px;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.toggle-handle-bar {
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(to right, #777475, #a4a4a4, #fff 45% 55%, #a4a4a4, #777475);
+  background-position-x: .06125em;
+  transition: background-position-x .24s cubic-bezier(.65, 1.35, .5, 1);
+  box-shadow: inset 0 1em .25em rgb(0 0 0 / .4);
+}
+
+.toggle-base {
+  position: absolute;
+  bottom: -10px;
+  border-radius: 50px;
+  padding: .25em;
+  width: 70px;
+  height: 14px;
+  background-color: #fff;
+  background-image: linear-gradient(to bottom, #fff, #d7d7d7);
+  box-shadow: 0 -.25em .5em #fff, 0 .25em .5em #d7d7d7;
+}
+
+.toggle-base-inside {
+  border-radius: inherit;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(to bottom, #a6a6a6, #7d7d7d);
+  box-shadow: inset 0 .0625em rgb(255 255 255 / .2), inset 0 -.03125em rgb(255 255 255), inset 0 -.0625em .25em rgb(0 0 0 / .1);
+}
+
+.toggle-input:checked ~ .toggle-base .toggle-base-inside::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background-image: linear-gradient(to bottom, #5ab054, #438c3c);
+  box-shadow: inherit;
+  opacity: 1;
+}
+
+.lever {
+  position: absolute;
+  right: -8000px;
+  top: 50%;
+  transform: translateY(-50%) rotate(0deg);
+  transform-origin: center;
+  height: 60px;
+  cursor: pointer;
+  transition: transform 0.6s ease-in-out;
+}
+    
   </style>
-  
-  <style>
-    .fade-in {
-      animation: fadeIn 0.5s ease-in forwards;
-    }
-    
-    .fade-out {
-      animation: fadeOut 0.5s ease-out forwards;
-    }
-    
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateX(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-    
-    @keyframes fadeOut {
-      from {
-        opacity: 1;
-        transform: translateX(0);
-      }
-      to {
-        opacity: 0;
-        transform: translateX(20px);
-      }
-    }
 
 
-    
-    </style>
-    
+
+ 
 
 
-  <select id="time-window-selector">
-    <option value="3600000">Last Hour</option>        <!-- 1 hour -->
-    <option value="14400000">Last 4 Hours</option>     <!-- 4 hours -->
-    <option value="28800000">Last 8 Hours</option>     <!-- 8 hours -->
-    <option value="86400000">Last 24 Hours</option>    <!-- 1 day -->
-    <option value="604800000">Last 7 Days</option>     <!-- 1 week -->
-  </select>
-  
 
-  </style>
 </head>
+
+
+
 <body>
 
 
-  <!-- 🌟 Loading Screen -->
-<div id="loading-screen" style="display: none; text-align: center; padding: 2rem;">
-  <h2 style="color: #f39c12;">Connecting to Live Leaderboard...</h2>
-  <p style="color: #ccc;">Please wait, establishing a secure connection.</p>
-  <div id="spinner" style="margin-top: 1rem;">
-    🔄
+
+  
+  <!-- ⏳ Loading Screen -->
+  <div id="loading-screen" style="display: none; text-align: center; padding: 2rem;">
+    <h2 style="color: #f39c12;">Connecting to Live Leaderboard...</h2>
+    <p style="color: #ccc;">Please wait, establishing a secure connection.</p>
+    <div id="spinner">🔄</div>
   </div>
-</div>
-
-
-
 
   <h1 style="text-align:center; color:#f39c12; margin-bottom: 30px;">Angry Dynomites Leaderboard</h1>
 
-  <div class="leaderboard-container" id="leaderboard">
-    <!-- Example Entries -->
-    <div class="player-bar first">
-      <div class="label">Dynamite Dan</div>
-      <img class="avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=4" alt="Avatar">
-      <div class="bar-wrapper"><div class="bar" style="width: 90%;"></div></div>
-    </div>
-    <div class="player-bar second">
-      <div class="label">Blazing Betty</div>
-      <img class="avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=5" alt="Avatar">
-      <div class="bar-wrapper"><div class="bar" style="width: 80%;"></div></div>
-    </div>
-    <div class="player-bar third">
-      <div class="label">Pyro Pete</div>
-      <img class="avatar" src="https://api.dicebear.com/7.x/bottts/svg?seed=6" alt="Avatar">
-      <div class="bar-wrapper"><div class="bar" style="width: 70%;"></div></div>
-    </div>
-  </div>
-</body>
-</html>
+  <!-- 🥇 Leaderboard Container -->
+  <div class="leaderboard-container" id="leaderboard"></div>
+
+  <button id="refresh-btn" style="margin-top: 2rem;">🔁 Refresh Leaderboard</button>
+
+  <p id="last-updated" style="margin-top: 0.5rem; color: #ccc; font-size: 0.9rem;">
+    Last refreshed: never
+  </p>
+
+  <!-- ⏱ Time Window Selector -->
+  <select id="time-window-selector" style="margin-top: 1rem;">
+    <option value="3600000">Last Hour</option>
+    <option value="14400000">Last 4 Hours</option>
+    <option value="28800000">Last 8 Hours</option>
+    <option value="86400000">Last 24 Hours</option>
+    <option value="604800000">Last 7 Days</option>
+  </select>
 
 
 
 
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
 
-
-
-<button id="refresh-btn">🔁 Refresh Leaderboard</button>
-<p id="last-updated" style="margin-top: 0.5rem; color: #ccc; font-size: 0.9rem;">
-  Last refreshed: never
-</p>
-
-
-
-
-<script>
-// 🌟 Show / Hide Loading Screen
-function showLoadingScreen() {
-  document.getElementById('loading-screen').style.display = 'block';
-  document.getElementById('leaderboard').style.opacity = '0'; // hide leaderboard
-}
-
-function hideLoadingScreen() {
-  document.getElementById('loading-screen').style.display = 'none';
-  document.getElementById('leaderboard').style.opacity = '1'; // fade in leaderboard
-}
-
-// 🚀 Fetch Leaderboard Data
-async function fetchDataAndUpdate() {
-  showLoadingScreen();
-  try {
-    const response = await fetch('https://elemental-race.onrender.com/graphql', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        query: `
-          query {
-            masterpiece {
-              id
-              name
-              leaderboard {
-                profile {
-                  displayName
-                  avatarUrl
-                }
-                masterpiecePoints
-              }
-            }
-          }
-        `
-      })
-    });
-
-    const data = await response.json();
-    const masterpiece = data?.data?.masterpiece;
-
-    if (!masterpiece?.leaderboard?.length) {
-      console.warn('⚠️ No leaderboard data received — keeping fallback mock data.');
-      hideLoadingScreen();
-      return;
-    }
-
-    document.querySelector('h1').textContent = `${masterpiece.name} Leaderboard`;
-
-    displayLeaderboard(
-      masterpiece.leaderboard
-        .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
-        .slice(0, 10)
-        .map(player => ({
-          ...player,
-          timestamp: Date.now()
-        }))
-    );
-
-    updateLastRefreshedTime();
-    hideLoadingScreen();
-
-  } catch (error) {
-    console.error('❌ Fetch leaderboard error:', error);
-    console.warn('⚠️ Keeping fallback mock data.');
-    hideLoadingScreen();
-  }
-}
-
-// 🕒 Auto-Refresh with Smart Pause
-let refreshInterval = null;
+  <script>
 
 function startAutoRefresh() {
-  console.log('🔄 Auto-refresh started (every 60 seconds)');
-  fetchDataAndUpdate();
-  refreshInterval = setInterval(fetchDataAndUpdate, 60000);
+  console.log("⏱️ startAutoRefresh stub initialized.");
+  // This is a stub. Actual auto-refresh logic should go here.
 }
 
-function stopAutoRefresh() {
-  if (refreshInterval) {
-    console.log('🛑 Auto-refresh stopped (tab hidden)');
-    clearInterval(refreshInterval);
-    refreshInterval = null;
-  }
-}
+document.addEventListener('DOMContentLoaded', () => {
+  startAutoRefresh();
 
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    stopAutoRefresh();
-  } else {
-    startAutoRefresh();
+  const toggleWrapper = document.createElement('div');
+  toggleWrapper.className = 'toggle';
+
+  const input = document.createElement('input');
+  input.type = 'checkbox';
+  input.className = 'toggle-input';
+  input.id = 'speaker-toggle';
+
+  const handleWrapper = document.createElement('div');
+  handleWrapper.className = 'toggle-handle-wrapper';
+
+  const handle = document.createElement('div');
+  handle.className = 'toggle-handle';
+
+  const knob = document.createElement('div');
+  knob.className = 'toggle-handle-knob';
+
+  const barWrapper = document.createElement('div');
+  barWrapper.className = 'toggle-handle-bar-wrapper';
+
+  const bar = document.createElement('div');
+  bar.className = 'toggle-handle-bar';
+
+  barWrapper.appendChild(bar);
+  handle.appendChild(knob);
+  handle.appendChild(barWrapper);
+  handleWrapper.appendChild(handle);
+
+  const base = document.createElement('div');
+  base.className = 'toggle-base';
+  const baseInside = document.createElement('div');
+  baseInside.className = 'toggle-base-inside';
+  base.appendChild(baseInside);
+
+  toggleWrapper.appendChild(input);
+  toggleWrapper.appendChild(handleWrapper);
+  toggleWrapper.appendChild(base);
+
+  document.body.appendChild(toggleWrapper);
+
+  const playlist = [
+    { src: 'asset/WHopped-Choped.mp3', loops: 1 },
+    { src: 'asset/background-loop.mp3', loops: 4 },
+    { src: 'asset/swasdfhe.mp3', loops: 1 }
+  ];
+
+  let current = 0;
+  let loopCount = 0;
+  const audio = new Audio();
+  audio.volume = 0.2;
+
+  function playNext() {
+    if (current >= playlist.length) return;
+    audio.src = playlist[current].src;
+    audio.play().catch(err => {
+      console.warn('🔇 Autoplay prevented:', err);
+    });
   }
+
+  audio.addEventListener('ended', () => {
+    loopCount++;
+    if (loopCount < playlist[current].loops) {
+      audio.currentTime = 0;
+      audio.play();
+    } else {
+      loopCount = 0;
+      current++;
+      playNext();
+    }
+  });
+
+  input.addEventListener('change', () => {
+    if (input.checked) {
+      current = 0;
+      loopCount = 0;
+      playNext();
+    } else {
+      audio.pause();
+    }
+  });
 });
 
-// 🚀 Initial Load
-document.addEventListener('DOMContentLoaded', startAutoRefresh);
 
-// 🎨 Build Leaderboard
-function displayLeaderboard(leaderboardData) {
-  const maxPoints = Math.max(...leaderboardData.map(p => p.masterpiecePoints));
-  const leaderboardEl = document.getElementById('leaderboard');
 
-  // Fade out leaderboard before updating
-  leaderboardEl.style.opacity = '0';
-  
-  setTimeout(() => {
-    leaderboardEl.innerHTML = '';
-
-    leaderboardData.forEach((player, index) => {
-      const rank = index + 1;
-      const wrapper = document.createElement('div');
-      wrapper.className = 'player-bar fade-in';
-      wrapper.style.animationDelay = `${index * 0.2}s`;
-
-      if (rank === 1) wrapper.classList.add('first', 'hoverable');
-      else if (rank === 2) wrapper.classList.add('second', 'hoverable');
-      else if (rank === 3) wrapper.classList.add('third', 'hoverable');
-      else wrapper.classList.add('hoverable');
-
-      // 🖼️ Avatar
-      const avatarWrapper = document.createElement('div');
-      avatarWrapper.className = 'avatar-wrapper';
-      const avatar = document.createElement('img');
-      avatar.className = 'avatar';
-      let avatarUrl = player.profile.avatarUrl ?? '';
-      let avatarSrc = 'asset/default-avatar.gif';
-
-      if (avatarUrl.startsWith('ipfs://')) {
-        avatarSrc = avatarUrl.replace('ipfs://', 'https://ipfs.io/ipfs/');
-      } else if (avatarUrl.startsWith('http')) {
-        avatarSrc = avatarUrl;
+    let lastLeaderboardHash = null;
+    let lastPlayerRanks = {};
+    let refreshInterval = null;
+    
+    function showLoadingScreen() {
+      document.getElementById('loading-screen').style.display = 'block';
+      document.getElementById('leaderboard').style.opacity = '0';
+    }
+    
+    function hideLoadingScreen() {
+      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('leaderboard').style.opacity = '1';
+    }
+    
+    async function fetchDataAndUpdate() {
+      showLoadingScreen();
+      try {
+        const response = await fetch('https://elemental-race.onrender.com/graphql', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: `
+              query {
+                masterpiece {
+                  id
+                  name
+                  leaderboard {
+                    profile {
+                      displayName
+                      avatarUrl
+                    }
+                    masterpiecePoints
+                  }
+                }
+              }
+            `
+          })
+        });
+    
+        const { data } = await response.json();
+        const masterpiece = data?.masterpiece;
+    
+        if (!masterpiece?.leaderboard?.length) {
+          console.warn('⚠️ No leaderboard data available.');
+          hideLoadingScreen();
+          return;
+        }
+    
+        const newHash = JSON.stringify(
+          masterpiece.leaderboard.map(player => ({
+            name: player.profile.displayName,
+            points: player.masterpiecePoints
+          }))
+        );
+    
+        if (newHash !== lastLeaderboardHash) {
+          console.log('🔄 New changes detected, updating leaderboard...');
+          lastLeaderboardHash = newHash;
+    
+          document.querySelector('h1').textContent = `${masterpiece.name} Leaderboard`;
+          updateLeaderboard(masterpiece.leaderboard);
+          updateLastRefreshedTime();
+        } else {
+          console.log('✅ No updates needed.');
+        }
+        hideLoadingScreen();
+      } catch (error) {
+        console.error('❌ Fetch failed:', error);
+        hideLoadingScreen();
       }
-      avatar.src = avatarSrc;
-      avatar.onerror = () => {
-        avatar.src = 'asset/default-avatar.gif';
-      };
-      avatarWrapper.appendChild(avatar);
+    }
 
-      // 🪵 Drawer under avatar
-      const drawer = document.createElement('div');
-      drawer.className = 'drawer';
-      drawer.innerHTML = `
-        <a href="https://example.com/player/${player.profile.displayName}" target="_blank">View Profile</a>
-        <a href="https://example.com/stats/${player.profile.displayName}" target="_blank">View Stats</a>
-      `;
-      avatarWrapper.appendChild(drawer);
 
-      avatarWrapper.addEventListener('mouseenter', () => drawer.classList.add('open'));
-      avatarWrapper.addEventListener('mouseleave', () => drawer.classList.remove('open'));
+    function updateLeaderboard(leaderboardData) {
+      const container = document.getElementById('leaderboard');
+      container.innerHTML = '';
 
-      // Hover physics
-      avatarWrapper.addEventListener('mousemove', (e) => {
-        const rect = avatarWrapper.getBoundingClientRect();
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        const offsetX = e.clientX - rect.left - centerX;
-        const offsetY = e.clientY - rect.top - centerY;
-        avatar.style.transform = `scale(0.85) rotateX(${offsetY * -0.2}deg) rotateY(${offsetX * 0.2}deg)`;
-      });
 
-      avatarWrapper.addEventListener('mouseleave', () => {
-        avatar.style.transform = 'scale(1) rotateX(0deg) rotateY(0deg)';
-      });
-
-      // 🏷️ Label
-      const label = document.createElement('div');
-      label.className = 'label';
-      label.textContent = `${player.profile.displayName} (${player.masterpiecePoints} pts)`;
-
-      // 📊 Bar
-      const barWrapper = document.createElement('div');
-      barWrapper.className = 'bar-wrapper';
-      const bar = document.createElement('div');
-      bar.className = 'bar';
-      bar.style.width = `${(player.masterpiecePoints / maxPoints) * 100}%`;
-      barWrapper.appendChild(bar);
-
-      wrapper.appendChild(avatarWrapper);
-      wrapper.appendChild(label);
-      wrapper.appendChild(barWrapper);
-
-      leaderboardEl.appendChild(wrapper);
-    });
-
-    // Fade back in
-    requestAnimationFrame(() => {
-      leaderboardEl.style.opacity = '1';
-    });
-  }, 300); // fade timing
-}
-
-// 🔄 Update Last Refreshed Time
-function updateLastRefreshedTime() {
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const dateStr = now.toLocaleDateString();
-  const el = document.getElementById('last-updated');
-  el.textContent = `Last refreshed: ${timeStr} on ${dateStr}`;
-  el.style.opacity = 0;
-  el.style.transition = 'opacity 0.5s ease-in-out';
-  requestAnimationFrame(() => {
-    el.style.opacity = 1;
+      const newRanks = {};
+    
+      const sortedData = leaderboardData
+        .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
+        .slice(0, 10);
+    
+      const maxPoints = Math.max(...sortedData.map(player => player.masterpiecePoints));
+    
+      sortedData.forEach((player, index) => {
+        const playerName = player.profile.displayName;
+        const rank = index + 1;
+        newRanks[playerName] = rank;
+    
+        const barWidth = (player.masterpiecePoints / maxPoints) * 100;
+        createPlayerBar(playerName, player.profile.avatarUrl, player.masterpiecePoints, barWidth, rank, container);
   });
+
+  lastPlayerRanks = newRanks;
+} // 👈 Close updateLeaderboard FIRST
+
+
+
+function createPlayerBar(name, avatarUrl, points, width, rank, container) {
+  const cardWrapper = document.createElement('div');
+  cardWrapper.className = 'player-bar fade-in hoverable';
+  cardWrapper.dataset.name = name;
+  cardWrapper.style.animationDelay = `${rank * 0.1}s`;
+  cardWrapper.style.position = 'relative';
+
+  if (rank === 1) cardWrapper.classList.add('first');
+  else if (rank === 2) cardWrapper.classList.add('second');
+  else if (rank === 3) cardWrapper.classList.add('third');
+
+  const avatarWrapper = document.createElement('div');
+  avatarWrapper.className = 'avatar-wrapper';
+  const avatar = document.createElement('img');
+  avatar.className = 'avatar';
+
+  let avatarSrc = 'asset/default-avatar.gif';
+  if (avatarUrl?.startsWith('ipfs://')) {
+    avatarSrc = avatarUrl.replace('ipfs://', 'https://ipfs.io/ipfs/');
+  } else if (avatarUrl?.startsWith('http')) {
+    avatarSrc = avatarUrl;
+  }
+  avatar.src = avatarSrc;
+  avatar.onerror = () => {
+    if (avatar.src !== location.origin + '/asset/default-avatar.gif') {
+      console.warn(`⚠️ Avatar failed to load for '${name}':`, avatarUrl);
+      avatar.src = 'asset/default-avatar.gif';
+    }
+  };
+  avatarWrapper.appendChild(avatar);
+
+  const label = document.createElement('div');
+  label.className = 'label';
+  label.textContent = `${name} (${points} pts)`;
+
+  const barWrapper = document.createElement('div');
+  barWrapper.className = 'bar-wrapper';
+
+  const bar = document.createElement('div');
+  bar.className = 'bar';
+  bar.style.width = '100%';
+  bar.style.position = 'relative';
+  bar.style.backgroundImage = `url('${avatarSrc}')`;
+  bar.style.backgroundSize = 'cover';
+  bar.style.backgroundRepeat = 'repeat-x';
+  bar.style.animation = 'scrollBackground 20s linear infinite';
+
+  const txtImg = document.createElement('img');
+  txtImg.className = 'bar-gif';
+  txtImg.src = 'asset/generative=art=2.gif';
+  txtImg.style.position = 'absolute';
+  txtImg.style.top = '50%';
+  txtImg.style.left = '0';
+  txtImg.style.transform = 'translateY(-50%)';
+  txtImg.style.animation = `slideAlong 8s linear infinite`;
+
+  bar.appendChild(txtImg);
+  barWrapper.appendChild(bar);
+
+  const lever = document.createElement('img');
+  lever.className = 'lever';
+  lever.src = 'asset/wood_lever.png';
+  lever.style.height = '60px';
+  lever.style.marginLeft = '16px';
+  lever.style.cursor = 'pointer';
+  lever.style.transition = 'transform 0.7s ease-in-out';
+
+  const leverAudio = new Audio('asset/lever-click.mp3');
+  leverAudio.volume = 0.6;
+
+  cardWrapper.appendChild(avatarWrapper);
+  cardWrapper.appendChild(label);
+  cardWrapper.appendChild(barWrapper);
+  cardWrapper.appendChild(lever);
+
+  const drawer = document.createElement('div');
+  drawer.className = 'drawer';
+  const drawerImg = document.createElement('img');
+  drawerImg.src = 'asset/drawer.png';
+  drawerImg.style.width = '100%';
+  drawerImg.style.maxHeight = '150px';
+  drawerImg.style.objectFit = 'cover';
+  drawer.appendChild(drawerImg);
+
+  lever.addEventListener('click', (e) => {
+    e.stopPropagation();
+    leverAudio.currentTime = 0;
+    leverAudio.play();
+
+    lever.style.transform = 'rotate(30deg)';
+    setTimeout(() => {
+      lever.style.transform = 'rotate(0deg)';
+    }, 700);
+
+    document.querySelectorAll('.drawer.open').forEach(d => {
+      if (d !== drawer) {
+        d.classList.remove('open');
+        d.style.maxHeight = '0';
+        d.style.padding = '0 16px';
+      }
+    });
+
+    const isOpen = drawer.classList.toggle('open');
+    cardWrapper.classList.toggle('expanded', isOpen);
+
+    if (isOpen) {
+      drawer.style.maxHeight = drawer.scrollHeight + 'px';
+      drawer.style.padding = '16px';
+      drawer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      drawer.style.maxHeight = '0';
+      drawer.style.padding = '0 16px';
+    }
+  });
+
+  container.appendChild(cardWrapper);
+  container.appendChild(drawer);
 }
-</script>
+
+
+
+    function updateLastRefreshedTime() {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const dateStr = now.toLocaleDateString();
+      const el = document.getElementById('last-updated');
+      el.textContent = `Last refreshed: ${timeStr} on ${dateStr}`;
+      el.style.opacity = 0;
+      el.style.transition = 'opacity 0.5s ease-in-out';
+      requestAnimationFrame(() => { el.style.opacity = 1; });
+    }
+ 
+    
+
+    function startAutoRefresh() {
+      console.log('🔄 Auto-refresh every 60 seconds started.');
+      fetchDataAndUpdate();
+      refreshInterval = setInterval(fetchDataAndUpdate, 60000);
+    }
+    
+    function stopAutoRefresh() {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+        console.log('🛑 Auto-refresh stopped.');
+      }
+    }
+
+
+
+    document.getElementById('refresh-btn').addEventListener('click', fetchDataAndUpdate);
+    </script>
+
+
+
