@@ -31,7 +31,13 @@
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
+  opacity: 0;
+  transform: translateY(-50px);
+  animation: dropIn 0.6s ease-out forwards;
 }
+
+
+
     @keyframes slideAlong {
   0% { left: 0%; }
   100% { left: 100%; }
@@ -108,14 +114,17 @@
       100% { background-position: 1000px 0; }
     }
     .drawer {
-  max-height: 0;
-  overflow: hidden;
-  background: #f8f8f8;
+  background-image: url('asset/wood-texture.jpg');
+  background-size: cover;
+  background-position: center;
   border-radius: 0 0 8px 8px;
-  margin-bottom: 8px;
+  overflow: hidden;
+
+  max-height: 0;
   padding: 0 16px;
+  
+  /* animate open/close */
   transition: max-height 0.5s ease, padding 0.3s ease;
-  transform-origin: top;
 }
 
 .drawer.open {
@@ -174,10 +183,7 @@
       font-size: 2rem;
       animation: spin 1s linear infinite;
     }
-    .fade-in {
-    animation: fadeIn 3s ease-out forwards;
-    opacity: 0;
-  }
+
 
   .bg-speaker {
     position: fixed;
@@ -226,111 +232,114 @@
     }
 
 
-/* 🎚️ Full speaker toggle visual styling */
-.toggle {
-  position: fixed;
-  top: 44px;
-  left: 20px;
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 60px;
-  height: 60px;
-}
-
-.toggle-input {
+/* 🔁 Lever switch animation style inspired by physical toggles */
+.switch {
   position: absolute;
-  width: 60px;
-  height: 60px;
-  opacity: 0;
-  z-index: 2;
-  cursor: pointer;
+  right: -80px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: black;
+  width: 150px;
+  height: 195px;
+  box-shadow: 
+    0 0 10px 2px rgba(0, 0, 0, 0.2),
+    0 0 1px 2px black,
+    inset 0 2px 2px -2px white,
+    inset 0 0 2px 15px #47434c,
+    inset 0 0 2px 22px black;
+  border-radius: 5px;
+  padding: 20px;
+  perspective: 700px;
+  z-index: 10;
 }
 
-.toggle-handle-wrapper {
+.switch input {
+  display: none;
+}
+
+.switch input:checked + .button {
+  transform: translateZ(20px) rotateX(25deg);
+  box-shadow: 0 -10px 20px #ff1818;
+}
+
+.button {
+  transition: all 0.3s cubic-bezier(1, 0, 1, 1);
+  transform-origin: center center -20px;
+  transform: translateZ(20px) rotateX(-25deg);
+  transform-style: preserve-3d;
+  background: linear-gradient(#990000, #660000);
   width: 100%;
   height: 100%;
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.toggle-handle {
-  width: 50px;
-  height: 50px;
-  background: radial-gradient(circle at 70% 30%, #fedee2 4%, #d63534 12% 24%, #a81a1a 50% 65%, #d63534 75%);
-  border-radius: 50%;
-  box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.3);
-  transition: transform 0.24s cubic-bezier(.65, 1.35, .5, 1);
-  transform: rotate(0deg);
-}
-
-.toggle-input:checked + .toggle-handle-wrapper .toggle-handle {
-  transform: rotate(25deg);
-}
-
-.toggle-handle-bar-wrapper {
-  position: absolute;
-  width: 6px;
-  height: 30px;
-  top: -5px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.toggle-handle-bar {
-  width: 100%;
-  height: 100%;
-  background-image: linear-gradient(to right, #777475, #a4a4a4, #fff 45% 55%, #a4a4a4, #777475);
-  background-position-x: .06125em;
-  transition: background-position-x .24s cubic-bezier(.65, 1.35, .5, 1);
-  box-shadow: inset 0 1em .25em rgb(0 0 0 / .4);
-}
-
-.toggle-base {
-  position: absolute;
-  bottom: -10px;
-  border-radius: 50px;
-  padding: .25em;
-  width: 70px;
-  height: 14px;
-  background-color: #fff;
-  background-image: linear-gradient(to bottom, #fff, #d7d7d7);
-  box-shadow: 0 -.25em .5em #fff, 0 .25em .5em #d7d7d7;
-}
-
-.toggle-base-inside {
-  border-radius: inherit;
-  width: 100%;
-  height: 100%;
-  background-image: linear-gradient(to bottom, #a6a6a6, #7d7d7d);
-  box-shadow: inset 0 .0625em rgb(255 255 255 / .2), inset 0 -.03125em rgb(255 255 255), inset 0 -.0625em .25em rgb(0 0 0 / .1);
-}
-
-.toggle-input:checked ~ .toggle-base .toggle-base-inside::after {
-  content: '';
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-  background-image: linear-gradient(to bottom, #5ab054, #438c3c);
-  box-shadow: inherit;
-  opacity: 1;
-}
-
-.lever {
-  position: absolute;
-  right: -8000px;
-  top: 50%;
-  transform: translateY(-50%) rotate(0deg);
-  transform-origin: center;
-  height: 60px;
   cursor: pointer;
-  transition: transform 0.6s ease-in-out;
 }
-    
+
+.button::before,
+.button::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 50px;
+  background: linear-gradient(#600000, #440000);
+}
+
+.button::before {
+  top: 0;
+  transform: rotateX(-90deg);
+  transform-origin: top;
+}
+
+.button::after {
+  bottom: 0;
+  transform: translateY(50px) rotateX(-90deg);
+  transform-origin: top;
+  box-shadow: 0 50px 8px 0px black, 0 80px 20px 0px rgba(0, 0, 0, 0.5);
+}
+
+.light {
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(#ff7070, #ff1818 40%, transparent 70%);
+  animation: light-off 1s;
+}
+
+input:checked + .button .light {
+  animation: flicker 0.2s infinite 0.3s;
+}
+
+.drawer {
+  background-image: url('asset/wood-texture.jpg');
+  background-size: cover;
+  background-position: center;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+  height: auto;
+  padding: 0;
+  max-height: none;
+}
+
+.drawer img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 0 0 8px 8px;
+}
+
+@keyframes flicker {
+  0% { opacity: 1; }
+  80% { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+
+@keyframes light-off {
+  0% { opacity: 1; }
+  80% { opacity: 0; }
+}
+
+
+
   </style>
 
 
@@ -388,66 +397,23 @@ function startAutoRefresh() {
   // This is a stub. Actual auto-refresh logic should go here.
 }
 
+
 document.addEventListener('DOMContentLoaded', () => {
-  startAutoRefresh();
-
-  const toggleWrapper = document.createElement('div');
-  toggleWrapper.className = 'toggle';
-
-  const input = document.createElement('input');
-  input.type = 'checkbox';
-  input.className = 'toggle-input';
-  input.id = 'speaker-toggle';
-
-  const handleWrapper = document.createElement('div');
-  handleWrapper.className = 'toggle-handle-wrapper';
-
-  const handle = document.createElement('div');
-  handle.className = 'toggle-handle';
-
-  const knob = document.createElement('div');
-  knob.className = 'toggle-handle-knob';
-
-  const barWrapper = document.createElement('div');
-  barWrapper.className = 'toggle-handle-bar-wrapper';
-
-  const bar = document.createElement('div');
-  bar.className = 'toggle-handle-bar';
-
-  barWrapper.appendChild(bar);
-  handle.appendChild(knob);
-  handle.appendChild(barWrapper);
-  handleWrapper.appendChild(handle);
-
-  const base = document.createElement('div');
-  base.className = 'toggle-base';
-  const baseInside = document.createElement('div');
-  baseInside.className = 'toggle-base-inside';
-  base.appendChild(baseInside);
-
-  toggleWrapper.appendChild(input);
-  toggleWrapper.appendChild(handleWrapper);
-  toggleWrapper.appendChild(base);
-
-  document.body.appendChild(toggleWrapper);
+  const audio = new Audio();
+  audio.volume = 0.2;
 
   const playlist = [
-    { src: 'asset/WHopped-Choped.mp3', loops: 1 },
-    { src: 'asset/background-loop.mp3', loops: 4 },
-    { src: 'asset/swasdfhe.mp3', loops: 1 }
+    { src: 'asset/swasdfhe.mp3', loops: 1 },
+    { src: 'asset/background-loop.mp3', loops: 4 }
   ];
 
   let current = 0;
   let loopCount = 0;
-  const audio = new Audio();
-  audio.volume = 0.2;
 
   function playNext() {
     if (current >= playlist.length) return;
     audio.src = playlist[current].src;
-    audio.play().catch(err => {
-      console.warn('🔇 Autoplay prevented:', err);
-    });
+    audio.play().catch(err => console.warn('🔇 Autoplay blocked:', err));
   }
 
   audio.addEventListener('ended', () => {
@@ -462,17 +428,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  input.addEventListener('change', () => {
-    if (input.checked) {
-      current = 0;
-      loopCount = 0;
-      playNext();
-    } else {
-      audio.pause();
-    }
-  });
+  playNext();
 });
-
 
 
     let lastLeaderboardHash = null;
@@ -577,9 +534,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function createPlayerBar(name, avatarUrl, points, width, rank, container) {
   const cardWrapper = document.createElement('div');
-  cardWrapper.className = 'player-bar fade-in hoverable';
+  cardWrapper.className = 'player-bar hoverable';
   cardWrapper.dataset.name = name;
-  cardWrapper.style.animationDelay = `${rank * 0.1}s`;
+  cardWrapper.style.animationDelay = `${rank * 0.3}s`;
   cardWrapper.style.position = 'relative';
 
   if (rank === 1) cardWrapper.classList.add('first');
@@ -690,8 +647,10 @@ function createPlayerBar(name, avatarUrl, points, width, rank, container) {
     }
   });
 
+  
   container.appendChild(cardWrapper);
   container.appendChild(drawer);
+
 }
 
 
