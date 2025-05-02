@@ -23,17 +23,53 @@
     }
     .player-bar {
   position: relative;
-  background: rgba(142, 75, 142, 0.572);
-  border-radius: 8px;
-  margin: 8px 0;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  overflow: hidden;  /* allow the drawer to slide out when opened */
+}
+
+
+
+
+.player-bar .lever {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 60px;             /* keep your inline size */
   cursor: pointer;
-  opacity: 0;
-  transform: translateY(-50px);
-  animation: dropIn 0.6s ease-out forwards;
+  transition: transform 0.7s ease-in-out;
+}
+
+/* drawer lives directly beneath each bar, starts collapsed */
+.player-bar .drawer {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 0;
+  padding: 0;
+  overflow: hidden;
+  background-image: url('asset/wood-texture.jpg');
+  background-size: cover;
+  background-position: center;
+  border-radius: 0 0 8px 8px;
+  transition: max-height 0.5s ease, padding 0.3s ease;
+
+
+  /* HIDE by default */
+  max-height: 0;
+  padding: 0;
+  overflow: hidden;
+
+   /* animate open/close */
+   transition: max-height 0.5s ease, padding 0.3s ease;
+}
+
+
+
+.player-bar.expanded .drawer {
+  /* when you toggle .expanded, it will slide down into view */
+  max-height: 200px;    /* or whatever your scrollHeight ends up being */
+  padding: 16px;
 }
 
 
@@ -307,24 +343,6 @@
 
 input:checked + .button .light {
   animation: flicker 0.2s infinite 0.3s;
-}
-
-.drawer {
-  background-image: url('asset/wood-texture.jpg');
-  background-size: cover;
-  background-position: center;
-  border-radius: 0 0 8px 8px;
-  overflow: hidden;
-  height: auto;
-  padding: 0;
-  max-height: none;
-}
-
-.drawer img {
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-  border-radius: 0 0 8px 8px;
 }
 
 @keyframes flicker {
@@ -611,9 +629,7 @@ function createPlayerBar(name, avatarUrl, points, width, rank, container) {
   drawer.className = 'drawer';
   const drawerImg = document.createElement('img');
   drawerImg.src = 'asset/drawer.png';
-  drawerImg.style.width = '100%';
-  drawerImg.style.maxHeight = '150px';
-  drawerImg.style.objectFit = 'cover';
+
   drawer.appendChild(drawerImg);
 
   lever.addEventListener('click', (e) => {
@@ -647,10 +663,11 @@ function createPlayerBar(name, avatarUrl, points, width, rank, container) {
     }
   });
 
-  
+ 
+
+
   container.appendChild(cardWrapper);
   container.appendChild(drawer);
-
 }
 
 
@@ -682,10 +699,21 @@ function createPlayerBar(name, avatarUrl, points, width, rank, container) {
       }
     }
 
+    
 
 
-    document.getElementById('refresh-btn').addEventListener('click', fetchDataAndUpdate);
-    </script>
+
+ document.getElementById('refresh-btn').addEventListener('click', fetchDataAndUpdate);
+ 
+ 
+ 
+ // immediately fetch & render on page load, then kick off auto-refresh
+document.addEventListener('DOMContentLoaded', () => {
+  fetchDataAndUpdate();
+  startAutoRefresh();
+});
+
+     </script>
 
 
 
