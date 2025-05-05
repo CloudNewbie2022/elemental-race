@@ -1,0 +1,75 @@
+{
+  "masterpieceId": "120",
+  "leaderboard": [
+    {
+      "profile": {
+        "displayName": "hememix",
+        "avatarUrl": "ipfs://QmVdZtKYNHbMWRyB7cNHUgWLXde1GreY4FCEWR9uco8vB8/31"
+      },
+      "masterpiecePoints": 7077280
+    },
+    {
+      "profile": {
+        "displayName": "CatanSettler",
+        "avatarUrl": "https://addressables-preview.apps.angrydynomiteslab.com/avatars/hidden-ones.png"
+      },
+      "masterpiecePoints": 4083006
+    },
+    {
+      "profile": {
+        "displayName": "roderzo",
+        "avatarUrl": "https://addressables-preview.apps.angrydynomiteslab.com/avatars/RODERZO-SPECIAL.png"
+      },
+      "masterpiecePoints": 4045000
+    },
+    {
+      "profile": {
+        "displayName": "Melionka",
+        "avatarUrl": "https://addressables-preview.apps.angrydynomiteslab.com/avatars/hidden-ones.png"
+      },
+      "masterpiecePoints": 3872500
+    },
+    {
+      "profile": {
+        "displayName": "max",
+        "avatarUrl": "https://addressables-preview.apps.angrydynomiteslab.com/avatars/ludo-dealer.png"
+      },
+      "masterpiecePoints": 3817250
+    },
+    {
+      "profile": {
+        "displayName": "Acrux",
+        "avatarUrl": "ipfs://QmQc1iwWsk8Wc38wG5jFftiv3QpL2Nb4umRLyNjAvRye5m/191"
+      },
+      "masterpiecePoints": 3568000
+    },
+    {
+      "profile": {
+        "displayName": "txxx",
+        "avatarUrl": "https://addressables-preview.apps.angrydynomiteslab.com/avatars/sandy-kiss.png"
+      },
+      "masterpiecePoints": 3523584
+    },
+    {
+      "profile": {
+        "displayName": "SamuraiX",
+        "avatarUrl": "https://addressables-preview.apps.angrydynomiteslab.com/avatars/morchi-mooarty.png"
+      },
+      "masterpiecePoints": 3500000
+    },
+    {
+      "profile": {
+        "displayName": "SuperMorchi",
+        "avatarUrl": "https://addressables-preview.apps.angrydynomiteslab.com/avatars/sandy-panda.png"
+      },
+      "masterpiecePoints": 2967000
+    },
+    {
+      "profile": {
+        "displayName": "Goliath",
+        "avatarUrl": "ipfs://QmVdZtKYNHbMWRyB7cNHUgWLXde1GreY4FCEWR9uco8vB8/751"
+      },
+      "masterpiecePoints": 2886184
+    }
+  ]
+}
