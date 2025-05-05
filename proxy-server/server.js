@@ -43,6 +43,13 @@ app.options('/graphql', (req, res) => {
 // Static files
 app.use('/asset', express.static(path.join(__dirname, 'asset')));
 app.use('/static', express.static(path.join(__dirname, 'asset')));
+app.use(
+  '/snapshots',
+  express.static(path.join(__dirname, 'snapshots'), {
+    index
+  extension: ['json'],
+})
+);
 
 // --- Smart Snapshot Management ---
 let currentInterval = null;

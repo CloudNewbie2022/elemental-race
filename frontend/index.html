@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Angry Dynomites Leaderboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
-  
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
 
   
   <style>
@@ -129,6 +130,7 @@
       border-radius: 8px;
       opacity: 0;
       animation: fadeInBar 0.6s ease-out forwards;
+      transition: width 1.2s ease-out
     }
 
 .bar-gif {
@@ -384,6 +386,26 @@ input:checked + .button .light {
 
   <h1 style="text-align:center; color:#f39c12; margin-bottom: 30px;">Angry Dynomites Leaderboard</h1>
 
+
+
+
+
+<!-- 📅 Snapshot Time -->
+<div id="snapshot-time" style="
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.9rem;
+  color: #ccc;
+  text-align: center;
+  margin-bottom: 0.5rem;
+">
+  Loading…
+</div>
+
+<div id="leaderboard" class="leaderboard-container"></div>
+
+
+
+
   <!-- 🥇 Leaderboard Container -->
   <div class="leaderboard-container" id="leaderboard"></div>
 
@@ -409,6 +431,14 @@ input:checked + .button .light {
 
 
   <script>
+
+let lastSnapshot = null;
+    let lastLeaderboardHash = null;
+    let lastPlayerRanks = {};
+    let refreshInterval = null;
+    
+
+
 
 function startAutoRefresh() {
   console.log("⏱️ startAutoRefresh stub initialized.");
@@ -449,15 +479,16 @@ document.addEventListener('DOMContentLoaded', () => {
   playNext();
 });
 
+  
 
-    let lastLeaderboardHash = null;
-    let lastPlayerRanks = {};
-    let refreshInterval = null;
-    
+
     function showLoadingScreen() {
       document.getElementById('loading-screen').style.display = 'block';
       document.getElementById('leaderboard').style.opacity = '0';
     }
+    
+
+
     
     function hideLoadingScreen() {
       document.getElementById('loading-screen').style.display = 'none';
@@ -465,62 +496,84 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     async function fetchDataAndUpdate() {
-      showLoadingScreen();
-      try {
-        const response = await fetch('https://elemental-race.onrender.com/graphql', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query: `
-              query {
-                masterpiece {
-                  id
-                  name
-                  leaderboard {
-                    profile {
-                      displayName
-                      avatarUrl
-                    }
-                    masterpiecePoints
-                  }
-                }
-              }
-            `
-          })
-        });
-    
-        const { data } = await response.json();
-        const masterpiece = data?.masterpiece;
-    
-        if (!masterpiece?.leaderboard?.length) {
-          console.warn('⚠️ No leaderboard data available.');
-          hideLoadingScreen();
-          return;
-        }
-    
-        const newHash = JSON.stringify(
-          masterpiece.leaderboard.map(player => ({
-            name: player.profile.displayName,
-            points: player.masterpiecePoints
-          }))
-        );
-    
-        if (newHash !== lastLeaderboardHash) {
-          console.log('🔄 New changes detected, updating leaderboard...');
-          lastLeaderboardHash = newHash;
-    
-          document.querySelector('h1').textContent = `${masterpiece.name} Leaderboard`;
-          updateLeaderboard(masterpiece.leaderboard);
-          updateLastRefreshedTime();
-        } else {
-          console.log('✅ No updates needed.');
-        }
-        hideLoadingScreen();
-      } catch (error) {
-        console.error('❌ Fetch failed:', error);
-        hideLoadingScreen();
-      }
+  // 1) Snapshot diffing
+  let snapshotChanged = false;
+  try {
+    const snapRes        = await fetch('/snapshot/latest.json');
+    if (!snapRes.ok) throw new Error('Network response was not ok');
+    const serverSnapshot = await snapRes.json();
+    const serverIds      = serverSnapshot.map(p => p.id).sort();
+    if (JSON.stringify(serverIds) !== JSON.stringify(lastSnapshot)) {
+      snapshotChanged = true;
+      lastSnapshot    = serverIds;
     }
+  } catch (err) {
+    console.error('❌ Snapshot fetch failed:', err);
+    // bail out (or set snapshotChanged = true if you want to force-update)
+    return;
+  }
+  if (!snapshotChanged) {
+    console.log('✅ No snapshot changes detected.');
+    return;
+  }
+
+  // 2) Show spinner
+  showLoadingScreen();
+
+  // 3) GraphQL fetch
+  try {
+    const response = await fetch('https://elemental-race.onrender.com/graphql', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: `
+          query {
+            masterpiece {
+              id
+              name
+              leaderboard {
+                profile {
+                  displayName
+                  avatarUrl
+                }
+                masterpiecePoints
+              }
+            }
+          }
+        `
+      })
+    });
+
+    const { data } = await response.json();
+    const masterpiece = data?.masterpiece;
+    if (!masterpiece?.leaderboard?.length) {
+      console.warn('⚠️ No leaderboard data available.');
+      return;
+    }
+
+    // 4) Your existing hash-diff + render logic
+    const newHash = JSON.stringify(
+      masterpiece.leaderboard.map(p => ({
+        name: p.profile.displayName,
+        points: p.masterpiecePoints
+      }))
+    );
+    if (newHash !== lastLeaderboardHash) {
+      lastLeaderboardHash = newHash;
+      document.querySelector('h1').textContent = `${masterpiece.name} Leaderboard`;
+      updateLeaderboard(masterpiece.leaderboard);
+      updateLastRefreshedTime();
+    } else {
+      console.log('✅ No leaderboard changes.');
+    }
+
+  } catch (err) {
+    console.error('❌ GraphQL fetch failed:', err);
+  } finally {
+    // 5) Always hide spinner
+    hideLoadingScreen();
+  }
+}
 
 
     function updateLeaderboard(leaderboardData) {
@@ -599,7 +652,7 @@ function createPlayerBar(name, avatarUrl, points, width, rank, container) {
 
   const txtImg = document.createElement('img');
   txtImg.className = 'bar-gif';
-  txtImg.src = 'asset/generative=art=2.gif';
+  txtImg.src = 'asset/generative-art=2.gif';
   txtImg.style.position = 'absolute';
   txtImg.style.top = '50%';
   txtImg.style.left = '0';

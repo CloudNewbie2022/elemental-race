@@ -133,15 +133,28 @@ function startRace() {
 }
 
 function animateNextFrame() {
-  setTimeout(() => {
-    currentSnapshotIndex++;
-    if (currentSnapshotIndex >= totalFrames) {
-      finishRace();
-      return;
-    }
-    updateFromSnapshot(snapshots[currentSnapshotIndex]);
-    animateNextFrame();
-  }, frameDuration);
+  // 1) Show the timestamp
+  const tsElem = document.getElementById('snapshot-time');
+  const ts = snapshots[currentSnapshotIndex].timestamp;
+  tsElem.textContent = new Date(ts).toLocaleTimeString([], {
+    hour:   '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+
+  // 2) Render this frame
+  updateFromSnapshot(snapshots[currentSnapshotIndex]);
+
+  // 3) Schedule the next frame (or finish)
+  if (currentSnapshotIndex < totalFrames - 1) {
+    setTimeout(() => {
+      currentSnapshotIndex++;
+      animateNextFrame();
+    }, frameDuration);
+  } else {
+    // give the final frame its full duration, then call finish
+    setTimeout(finishRace, frameDuration);
+  }
 }
 
 function finishRace() {
