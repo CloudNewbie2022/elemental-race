@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Angry Dynomites Leaderboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
-  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
 
   
@@ -128,9 +128,8 @@
       background-repeat: repeat-x;
       height: 100%;
       border-radius: 8px;
-      opacity: 0;
+      opacity:0;
       animation: fadeInBar 0.6s ease-out forwards;
-      transition: width 1.2s ease-out
     }
 
 .bar-gif {
@@ -144,7 +143,30 @@
   pointer-events: none;
 }
 
-
+#viewer-frame {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
+    }
+    #viewer-frame li {
+      list-style: none;
+      margin: 2px;
+      width: 24px;
+      height: 24px;
+      background-size: cover;
+      background-position: center;
+      border-radius: 50%;
+      opacity: 0.9;
+      transform: translateZ(0);
+      pointer-events: none;
+    }
 
 
     @keyframes scrollBackground {
@@ -232,6 +254,17 @@
     z-index: 1000;
     cursor: pointer;
   }
+
+  @media (max-width: 768px) {
+  .leaderboard-container {
+    flex-direction: column;
+  }
+
+  .player {
+    width: 100%;
+  }
+}
+
 
 
   @keyframes fadeIn {
@@ -343,8 +376,105 @@
   animation: light-off 1s;
 }
 
+
+
 input:checked + .button .light {
   animation: flicker 0.2s infinite 0.3s;
+}
+
+
+/* container */
+#music-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border: none;
+  background: radial-gradient(circle at 30% 30%, #fff, #ddd);
+  border-radius: 50%;
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 5px #CF4647;
+  transition: transform 0.2s;
+  overflow: hidden;
+}
+#music-btn:hover {
+  transform: scale(1.1);
+}
+
+/* ▶ triangle */
+.triangle {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 16px solid #CF4647;
+  border-top: 12px solid transparent;
+  border-bottom: 12px solid transparent;
+  transition: opacity 0.2s;
+}
+
+/* ⏸ bars */
+.bar {
+  position: absolute;
+  width: 8px;
+  height: 24px;
+  background: #CF4647;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.bar1 { left: 20px; }
+.bar2 { left: 32px; }
+
+/* “playing” state */
+#music-btn.playing {
+  animation: pulse 1.5s infinite;
+}
+#music-btn.playing .triangle { opacity: 0; }
+#music-btn.playing .bar     { opacity: 1; }
+
+/* glow pulse */
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 5px #CF4647; }
+  50%     { box-shadow: 0 0 20px #CF4647; }
+}
+
+
+
+/* HTML: <div class="loader"></div> */
+.loader {
+  width: 60px;
+  aspect-ratio: .5;
+  display: grid;
+}
+.loader:before {
+  content: "";
+  width: 30%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  margin: auto auto 0;
+  background: #CF4647;
+  animation: l9-0 .5s cubic-bezier(0,800,1,800) infinite;
+}
+.loader:after {
+  content: "";
+  width: 100%;
+  aspect-ratio: 1/cos(30deg);
+  margin: 0 auto auto;
+  clip-path: polygon(50% -50%,100% 50%,50% 150%,0 50%);
+  background: #524656;
+  animation: l9-1 .5s linear infinite;
+}
+@keyframes l9-0 {
+  0%,2%  {translate: 0   0%}
+  98%,to {translate: 0 -.2%}
+}
+@keyframes l9-1 {
+  0%,5%  {rotate:  0deg}
+  95%,to {rotate:-60deg}
 }
 
 @keyframes flicker {
@@ -379,32 +509,11 @@ input:checked + .button .light {
   
   <!-- ⏳ Loading Screen -->
   <div id="loading-screen" style="display: none; text-align: center; padding: 2rem;">
-    <h2 style="color: #f39c12;">Connecting to Live Leaderboard...</h2>
+    <h2 style="color: #f39c12;">Hold on, where does this?...</h2>
     <p style="color: #ccc;">Please wait, establishing a secure connection.</p>
-    <div id="spinner">🔄</div>
-  </div>
+    <div class="loader"></div>  </div>
 
   <h1 style="text-align:center; color:#f39c12; margin-bottom: 30px;">Angry Dynomites Leaderboard</h1>
-
-
-
-
-
-<!-- 📅 Snapshot Time -->
-<div id="snapshot-time" style="
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.9rem;
-  color: #ccc;
-  text-align: center;
-  margin-bottom: 0.5rem;
-">
-  Loading…
-</div>
-
-<div id="leaderboard" class="leaderboard-container"></div>
-
-
-
 
   <!-- 🥇 Leaderboard Container -->
   <div class="leaderboard-container" id="leaderboard"></div>
@@ -415,6 +524,8 @@ input:checked + .button .light {
     Last refreshed: never
   </p>
 
+  <ul id="viewer-frame"></ul>
+
   <!-- ⏱ Time Window Selector -->
   <select id="time-window-selector" style="margin-top: 1rem;">
     <option value="3600000">Last Hour</option>
@@ -424,306 +535,250 @@ input:checked + .button .light {
     <option value="604800000">Last 7 Days</option>
   </select>
 
-
-
-
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
+  <!-- hidden audio (looping background track) -->
+  <audio id="background-music" src="asset/background-loop.mp3" loop></audio>
+
+  <!-- custom play/pause button -->
+  <button id="music-btn" aria-label="Play music">
+    <div class="triangle"></div>
+    <span class="bar bar1"></span>
+    <span class="bar bar2"></span>
+  </button>
 
   <script>
-
-let lastSnapshot = null;
     let lastLeaderboardHash = null;
     let lastPlayerRanks = {};
     let refreshInterval = null;
-    
-
-
-
-function startAutoRefresh() {
-  console.log("⏱️ startAutoRefresh stub initialized.");
-  // This is a stub. Actual auto-refresh logic should go here.
-}
-
-
-document.addEventListener('DOMContentLoaded', () => {
-  const audio = new Audio();
-  audio.volume = 0.2;
-
-  const playlist = [
-    { src: 'asset/swasdfhe.mp3', loops: 1 },
-    { src: 'asset/background-loop.mp3', loops: 4 }
-  ];
-
-  let current = 0;
-  let loopCount = 0;
-
-  function playNext() {
-    if (current >= playlist.length) return;
-    audio.src = playlist[current].src;
-    audio.play().catch(err => console.warn('🔇 Autoplay blocked:', err));
-  }
-
-  audio.addEventListener('ended', () => {
-    loopCount++;
-    if (loopCount < playlist[current].loops) {
-      audio.currentTime = 0;
-      audio.play();
-    } else {
-      loopCount = 0;
-      current++;
-      playNext();
-    }
-  });
-
-  playNext();
-});
-
-  
-
 
     function showLoadingScreen() {
       document.getElementById('loading-screen').style.display = 'block';
       document.getElementById('leaderboard').style.opacity = '0';
     }
-    
 
-
-    
     function hideLoadingScreen() {
       document.getElementById('loading-screen').style.display = 'none';
       document.getElementById('leaderboard').style.opacity = '1';
     }
-    
+
     async function fetchDataAndUpdate() {
-  // 1) Snapshot diffing
-  let snapshotChanged = false;
-  try {
-    const snapRes        = await fetch('/snapshot/latest.json');
-    if (!snapRes.ok) throw new Error('Network response was not ok');
-    const serverSnapshot = await snapRes.json();
-    const serverIds      = serverSnapshot.map(p => p.id).sort();
-    if (JSON.stringify(serverIds) !== JSON.stringify(lastSnapshot)) {
-      snapshotChanged = true;
-      lastSnapshot    = serverIds;
-    }
-  } catch (err) {
-    console.error('❌ Snapshot fetch failed:', err);
-    // bail out (or set snapshotChanged = true if you want to force-update)
-    return;
-  }
-  if (!snapshotChanged) {
-    console.log('✅ No snapshot changes detected.');
-    return;
-  }
-
-  // 2) Show spinner
-  showLoadingScreen();
-
-  // 3) GraphQL fetch
-  try {
-    const response = await fetch('https://elemental-race.onrender.com/graphql', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        query: `
-          query {
-            masterpiece {
-              id
-              name
-              leaderboard {
-                profile {
-                  displayName
-                  avatarUrl
+      showLoadingScreen();
+      try {
+        const response = await fetch('https://elemental-race.onrender.com/graphql', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: `
+              query {
+                masterpiece {
+                  id
+                  name
+                  leaderboard {
+                    profile {
+                      displayName
+                      avatarUrl
+                    }
+                    masterpiecePoints
+                  }
                 }
-                masterpiecePoints
               }
-            }
-          }
-        `
-      })
-    });
+            `
+          })
+        });
 
-    const { data } = await response.json();
-    const masterpiece = data?.masterpiece;
-    if (!masterpiece?.leaderboard?.length) {
-      console.warn('⚠️ No leaderboard data available.');
-      return;
+        const { data } = await response.json();
+        const masterpiece = data?.masterpiece;
+
+        if (!masterpiece?.leaderboard?.length) {
+          console.warn('⚠️ No leaderboard data available.');
+          hideLoadingScreen();
+          return;
+        }
+
+        const newHash = JSON.stringify(
+          masterpiece.leaderboard.map(player => ({
+            name: player.profile.displayName,
+            points: player.masterpiecePoints
+          }))
+        );
+
+        if (newHash !== lastLeaderboardHash) {
+          console.log('🔄 New changes detected, updating leaderboard...');
+          lastLeaderboardHash = newHash;
+
+          document.querySelector('h1').textContent = `${masterpiece.name} Leaderboard`;
+          updateLeaderboard(masterpiece.leaderboard);
+          updateLastRefreshedTime();
+        } else {
+          console.log('✅ No updates needed.');
+        }
+        hideLoadingScreen();
+      } catch (error) {
+        console.error('❌ Fetch failed:', error);
+        hideLoadingScreen();
+      }
     }
-
-    // 4) Your existing hash-diff + render logic
-    const newHash = JSON.stringify(
-      masterpiece.leaderboard.map(p => ({
-        name: p.profile.displayName,
-        points: p.masterpiecePoints
-      }))
-    );
-    if (newHash !== lastLeaderboardHash) {
-      lastLeaderboardHash = newHash;
-      document.querySelector('h1').textContent = `${masterpiece.name} Leaderboard`;
-      updateLeaderboard(masterpiece.leaderboard);
-      updateLastRefreshedTime();
-    } else {
-      console.log('✅ No leaderboard changes.');
-    }
-
-  } catch (err) {
-    console.error('❌ GraphQL fetch failed:', err);
-  } finally {
-    // 5) Always hide spinner
-    hideLoadingScreen();
-  }
-}
-
 
     function updateLeaderboard(leaderboardData) {
       const container = document.getElementById('leaderboard');
       container.innerHTML = '';
 
-
       const newRanks = {};
-    
+
       const sortedData = leaderboardData
         .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
         .slice(0, 10);
-    
+
       const maxPoints = Math.max(...sortedData.map(player => player.masterpiecePoints));
-    
+
       sortedData.forEach((player, index) => {
         const playerName = player.profile.displayName;
         const rank = index + 1;
         newRanks[playerName] = rank;
-    
+
         const barWidth = (player.masterpiecePoints / maxPoints) * 100;
         createPlayerBar(playerName, player.profile.avatarUrl, player.masterpiecePoints, barWidth, rank, container);
-  });
+      });
 
-  lastPlayerRanks = newRanks;
-} // 👈 Close updateLeaderboard FIRST
-
-
-
-function createPlayerBar(name, avatarUrl, points, width, rank, container) {
-  const cardWrapper = document.createElement('div');
-  cardWrapper.className = 'player-bar hoverable';
-  cardWrapper.dataset.name = name;
-  cardWrapper.style.animationDelay = `${rank * 0.3}s`;
-  cardWrapper.style.position = 'relative';
-
-  if (rank === 1) cardWrapper.classList.add('first');
-  else if (rank === 2) cardWrapper.classList.add('second');
-  else if (rank === 3) cardWrapper.classList.add('third');
-
-  const avatarWrapper = document.createElement('div');
-  avatarWrapper.className = 'avatar-wrapper';
-  const avatar = document.createElement('img');
-  avatar.className = 'avatar';
-
-  let avatarSrc = 'asset/default-avatar.gif';
-  if (avatarUrl?.startsWith('ipfs://')) {
-    avatarSrc = avatarUrl.replace('ipfs://', 'https://ipfs.io/ipfs/');
-  } else if (avatarUrl?.startsWith('http')) {
-    avatarSrc = avatarUrl;
-  }
-  avatar.src = avatarSrc;
-  avatar.onerror = () => {
-    if (avatar.src !== location.origin + '/asset/default-avatar.gif') {
-      console.warn(`⚠️ Avatar failed to load for '${name}':`, avatarUrl);
-      avatar.src = 'asset/default-avatar.gif';
+      lastPlayerRanks = newRanks;
     }
-  };
-  avatarWrapper.appendChild(avatar);
 
-  const label = document.createElement('div');
-  label.className = 'label';
-  label.textContent = `${name} (${points} pts)`;
+    function createPlayerBar(name, avatarUrl, points, width, rank, container) {
+      const cardWrapper = document.createElement('div');
+      cardWrapper.className = 'player-bar hoverable';
+      cardWrapper.dataset.name = name;
+      cardWrapper.style.animationDelay = `${rank * 0.3}s`;
+      cardWrapper.style.position = 'relative';
 
-  const barWrapper = document.createElement('div');
-  barWrapper.className = 'bar-wrapper';
+      if (rank === 1) cardWrapper.classList.add('first');
+      else if (rank === 2) cardWrapper.classList.add('second');
+      else if (rank === 3) cardWrapper.classList.add('third');
 
-  const bar = document.createElement('div');
-  bar.className = 'bar';
-  bar.style.width = '100%';
-  bar.style.position = 'relative';
-  bar.style.backgroundImage = `url('${avatarSrc}')`;
-  bar.style.backgroundSize = 'cover';
-  bar.style.backgroundRepeat = 'repeat-x';
-  bar.style.animation = 'scrollBackground 20s linear infinite';
+      const avatarWrapper = document.createElement('div');
+      avatarWrapper.className = 'avatar-wrapper';
+      const avatar = document.createElement('img');
+      avatar.className = 'avatar';
 
-  const txtImg = document.createElement('img');
-  txtImg.className = 'bar-gif';
-  txtImg.src = 'asset/generative-art=2.gif';
-  txtImg.style.position = 'absolute';
-  txtImg.style.top = '50%';
-  txtImg.style.left = '0';
-  txtImg.style.transform = 'translateY(-50%)';
-  txtImg.style.animation = `slideAlong 8s linear infinite`;
-
-  bar.appendChild(txtImg);
-  barWrapper.appendChild(bar);
-
-  const lever = document.createElement('img');
-  lever.className = 'lever';
-  lever.src = 'asset/wood_lever.png';
-  lever.style.height = '60px';
-  lever.style.marginLeft = '16px';
-  lever.style.cursor = 'pointer';
-  lever.style.transition = 'transform 0.7s ease-in-out';
-
-  const leverAudio = new Audio('asset/lever-click.mp3');
-  leverAudio.volume = 0.6;
-
-  cardWrapper.appendChild(avatarWrapper);
-  cardWrapper.appendChild(label);
-  cardWrapper.appendChild(barWrapper);
-  cardWrapper.appendChild(lever);
-
-  const drawer = document.createElement('div');
-  drawer.className = 'drawer';
-  const drawerImg = document.createElement('img');
-  drawerImg.src = 'asset/drawer.png';
-
-  drawer.appendChild(drawerImg);
-
-  lever.addEventListener('click', (e) => {
-    e.stopPropagation();
-    leverAudio.currentTime = 0;
-    leverAudio.play();
-
-    lever.style.transform = 'rotate(30deg)';
-    setTimeout(() => {
-      lever.style.transform = 'rotate(0deg)';
-    }, 700);
-
-    document.querySelectorAll('.drawer.open').forEach(d => {
-      if (d !== drawer) {
-        d.classList.remove('open');
-        d.style.maxHeight = '0';
-        d.style.padding = '0 16px';
+      let avatarSrc = 'asset/default-avatar.gif';
+      if (avatarUrl?.startsWith('ipfs://')) {
+        avatarSrc = avatarUrl.replace('ipfs://', 'https://ipfs.io/ipfs/');
+      } else if (avatarUrl?.startsWith('http')) {
+        avatarSrc = avatarUrl;
       }
-    });
+      avatar.src = avatarSrc;
+      avatar.onerror = () => {
+        if (avatar.src !== location.origin + '/asset/default-avatar.gif') {
+          console.warn(`⚠️ Avatar failed to load for '${name}':`, avatarUrl);
+          avatar.src = 'asset/default-avatar.gif';
+        }
+      };
+      avatarWrapper.appendChild(avatar);
 
-    const isOpen = drawer.classList.toggle('open');
-    cardWrapper.classList.toggle('expanded', isOpen);
+      const label = document.createElement('div');
+      label.className = 'label';
+      label.textContent = `${name} (${points} pts)`;
 
-    if (isOpen) {
-      drawer.style.maxHeight = drawer.scrollHeight + 'px';
-      drawer.style.padding = '16px';
-      drawer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-      drawer.style.maxHeight = '0';
-      drawer.style.padding = '0 16px';
+      const barWrapper = document.createElement('div');
+      barWrapper.className = 'bar-wrapper';
+
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.width = '100%';
+      bar.style.position = 'relative';
+      bar.style.backgroundImage = `url('${avatarSrc}')`;
+      bar.style.backgroundSize = 'cover';
+      bar.style.backgroundRepeat = 'repeat-x';
+      bar.style.animation = 'scrollBackground 20s linear infinite';
+
+      const txtImg = document.createElement('img');
+      txtImg.className = 'bar-gif';
+      txtImg.src = 'asset/generative-art=2.gif';
+      txtImg.style.position = 'absolute';
+      txtImg.style.top = '50%';
+      txtImg.style.left = '0';
+      txtImg.style.transform = 'translateY(-50%)';
+      txtImg.style.animation = 'slideAlong 8s linear infinite';
+
+      bar.appendChild(txtImg);
+      barWrapper.appendChild(bar);
+
+      const lever = document.createElement('img');
+      lever.className = 'lever';
+      lever.src = 'asset/wood_lever.png';
+      lever.style.height = '60px';
+      lever.style.marginLeft = '16px';
+      lever.style.cursor = 'pointer';
+      lever.style.transition = 'transform 0.7s ease-in-out';
+
+      const leverAudio = new Audio('asset/lever-click.mp3');
+      leverAudio.volume = 0.6;
+
+      cardWrapper.appendChild(avatarWrapper);
+      cardWrapper.appendChild(label);
+      cardWrapper.appendChild(barWrapper);
+      cardWrapper.appendChild(lever);
+
+      const drawer = document.createElement('div');
+      drawer.className = 'drawer';
+      const drawerImg = document.createElement('img');
+      drawerImg.src = 'asset/drawer.png';
+
+      drawer.appendChild(drawerImg);
+
+      lever.addEventListener('click', (e) => {
+        e.stopPropagation();
+        leverAudio.currentTime = 0;
+        leverAudio.play();
+
+        lever.style.transform = 'rotate(30deg)';
+        setTimeout(() => {
+          lever.style.transform = 'rotate(0deg)';
+        }, 700);
+
+        document.querySelectorAll('.drawer.open').forEach(d => {
+          if (d !== drawer) {
+            d.classList.remove('open');
+            d.style.maxHeight = '0';
+            d.style.padding = '0 16px';
+          }
+        });
+
+        const isOpen = drawer.classList.toggle('open');
+        cardWrapper.classList.toggle('expanded', isOpen);
+
+        if (isOpen) {
+          drawer.style.maxHeight = drawer.scrollHeight + 'px';
+          drawer.style.padding = '16px';
+          drawer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          drawer.style.maxHeight = '0';
+          drawer.style.padding = '0 16px';
+        }
+      });
+
+      container.appendChild(cardWrapper);
+      container.appendChild(drawer);
     }
-  });
 
- 
+    async function animateLeaderboard() {
+      const snapshots = await fetchSnapshots(); // Assuming snapshots are an array of leaderboard states
+      let currentSnapshotIndex = 0;
 
+      function animateStep() {
+        renderLeaderboard(snapshots[currentSnapshotIndex]); // Render snapshot
+        gsap.from('.player', { opacity: 0, y: -20, stagger: 0.1 }); // GSAP animation
 
-  container.appendChild(cardWrapper);
-  container.appendChild(drawer);
-}
+        currentSnapshotIndex += 1;
+        if (currentSnapshotIndex < snapshots.length) {
+          setTimeout(animateStep, 1000); // Delay to simulate the race/transition effect
+        }
+      }
 
+      animateStep();
+    }
 
+    animateLeaderboard();
 
     function updateLastRefreshedTime() {
       const now = new Date();
@@ -735,15 +790,13 @@ function createPlayerBar(name, avatarUrl, points, width, rank, container) {
       el.style.transition = 'opacity 0.5s ease-in-out';
       requestAnimationFrame(() => { el.style.opacity = 1; });
     }
- 
-    
 
     function startAutoRefresh() {
       console.log('🔄 Auto-refresh every 60 seconds started.');
       fetchDataAndUpdate();
       refreshInterval = setInterval(fetchDataAndUpdate, 60000);
     }
-    
+
     function stopAutoRefresh() {
       if (refreshInterval) {
         clearInterval(refreshInterval);
@@ -752,21 +805,24 @@ function createPlayerBar(name, avatarUrl, points, width, rank, container) {
       }
     }
 
-    
+    // immediately fetch & render on page load, then kick off auto-refresh
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchDataAndUpdate();
+      startAutoRefresh();
+    });
 
+    document.addEventListener('DOMContentLoaded', () => {
+      const audio = document.getElementById('background-music');
+      const btn = document.getElementById('music-btn');
 
+      // keep the button’s look in sync with audio’s real state
+      audio.addEventListener('play', () => btn.classList.add('playing'));
+      audio.addEventListener('pause', () => btn.classList.remove('playing'));
 
- document.getElementById('refresh-btn').addEventListener('click', fetchDataAndUpdate);
- 
- 
- 
- // immediately fetch & render on page load, then kick off auto-refresh
-document.addEventListener('DOMContentLoaded', () => {
-  fetchDataAndUpdate();
-  startAutoRefresh();
-});
-
-     </script>
-
-
-
+      // toggle on click
+      btn.addEventListener('click', () => {
+        if (audio.paused) audio.play();
+        else audio.pause();
+      });
+    });
+  </script>
