@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🏁 Angry Dynomites Highlight Race with Replay</title>
+  <style>
+    body {
+      background: #1e1e1e;
+      color: white;
+      font-family: 'Orbitron', sans-serif;
+      margin: 0;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    #leaderboard {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 90%;
+      max-width: 1000px;
+      margin: 2rem auto;
+      gap: 15px;
+    }
+
+    .player-bar {
+      width: 90%;
+      display: flex;
+      align-items: center;
+      background: linear-gradient(135deg, #2c2c2c, #1a1a1a);
+      border: 2px solid #8e44ad;
+      border-radius: 12px;
+      padding: 10px;
+      transition: all 1s ease;
+    }
+
+    .first { background: linear-gradient(135deg, #ffd700, #ff8c00); border: 3px solid gold; animation: pulseGold 2s infinite alternate; }
+    .second { background: linear-gradient(135deg, #c0c0c0, #808080); border: 3px solid silver; animation: pulseSilver 2s infinite alternate; }
+    .third { background: linear-gradient(135deg, #cd7f32, #8b4513); border: 3px solid #cd7f32; animation: pulseBronze 2s infinite alternate; }
+
+    .position-button {
+      transform: rotate(-10deg);
+      margin-right: 10px;
+      background: #8e44ad;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 10px;
+      padding: 5px 10px;
+    }
+
+    .avatar-wrapper { width: 60px; height: 60px; border-radius: 50%; overflow: hidden; }
+    .avatar { width: 100%; height: 100%; object-fit: cover; }
+
+    .bar-wrapper {
+      flex-grow: 1;
+      background: rgba(50,56,56,0.25);
+      height: 60px;
+      margin-left: 10px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0;
+      background-image: url('asset/generative-art=2.gif');
+      background-size: cover;
+      border-radius: 8px;
+      transition: width 1.5s ease-out;
+    }
+
+    .name-label { width: 120px; margin-left: 10px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .points { margin-left: 1rem; font-size: 1.1rem; font-weight: bold; }
+
+    @keyframes pulseGold { 0% {box-shadow:0 0 10px gold;} 100% {box-shadow:0 0 20px gold;} }
+    @keyframes pulseSilver { 0% {box-shadow:0 0 10px silver;} 100% {box-shadow:0 0 20px silver;} }
+    @keyframes pulseBronze { 0% {box-shadow:0 0 10px #cd7f32;} 100% {box-shadow:0 0 20px #cd7f32;} }
+
+    #replay-btn {
+      display: none;
+      margin-top: 2rem;
+      padding: 10px 20px;
+      font-size: 1.2rem;
+      background: #8e44ad;
+      border: none;
+      border-radius: 12px;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🏎️ Angry Dynomites Race Replay</h1>
+<div id="leaderboard"></div>
+<button id="replay-btn" onclick="startRace()">🔁 Replay Race</button>
+
+<script>
+let snapshots = [];
+let players = {};
+let frameDuration = 2000;
+let currentSnapshotIndex = 0;
+let totalFrames = 0;
+
+async function loadLatestHighlight() {
+  const res = await fetch('http://localhost:8080/api/latest-highlight-id');
+  const data = await res.json();
+  await loadSnapshots(data.masterpieceId);
+}
+
+async function loadSnapshots(masterpieceId) {
+  const res = await fetch(`http://localhost:8080/api/highlight-snapshots/${masterpieceId}`);
+  let allShots = await res.json();
+  if (allShots.length > 20) {
+    snapshots = allShots.slice(-20); // Keep last 20 frames max
+  } else {
+    snapshots = allShots;
+  }
+  totalFrames = snapshots.length;
+  startRace();
+}
+
+function startRace() {
+  players = {};
+  document.getElementById('leaderboard').innerHTML = '';
+  document.getElementById('replay-btn').style.display = 'none';
+  currentSnapshotIndex = 0;
+  updateFromSnapshot(snapshots[currentSnapshotIndex]);
+  animateNextFrame();
+}
+
+function animateNextFrame() {
+  // 1) Show the timestamp
+  const tsElem = document.getElementById('snapshot-time');
+  const ts = snapshots[currentSnapshotIndex].timestamp;
+  tsElem.textContent = new Date(ts).toLocaleTimeString([], {
+    hour:   '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+
+  // 2) Render this frame
+  updateFromSnapshot(snapshots[currentSnapshotIndex]);
+
+  // 3) Schedule the next frame (or finish)
+  if (currentSnapshotIndex < totalFrames - 1) {
+    setTimeout(() => {
+      currentSnapshotIndex++;
+      animateNextFrame();
+    }, frameDuration);
+  } else {
+    // give the final frame its full duration, then call finish
+    setTimeout(finishRace, frameDuration);
+  }
+}
+
+function finishRace() {
+  const lb = document.getElementById('leaderboard');
+  lb.insertAdjacentHTML('beforeend', '<h2>🏁 Race Finished!</h2>');
+  document.getElementById('replay-btn').style.display = 'inline-block';
+}
+
+function updateFromSnapshot(snapshot) {
+  const lb = snapshot.data?.leaderboard || snapshot.leaderboard;
+  lb.sort((a, b) => b.masterpiecePoints - a.masterpiecePoints);
+
+  lb.forEach((player, index) => {
+    const id = player.profile.displayName.replace(/\s+/g, '-');
+
+    if (!players[id]) {
+      players[id] = {
+        points: 0,
+        targetPoints: player.masterpiecePoints,
+        avatar: parseAvatar(player.profile.avatarUrl),
+        name: player.profile.displayName,
+        rank: index
+      };
+      createPlayerBar(id);
+    } else {
+      players[id].targetPoints = player.masterpiecePoints;
+      players[id].rank = index;
+    }
+  });
+
+  reorderBars();
+  animateBars();
+}
+
+function createPlayerBar(id) {
+  const player = players[id];
+  const container = document.getElementById('leaderboard');
+
+  const div = document.createElement('div');
+  div.className = 'player-bar';
+  div.id = `player-${id}`;
+  div.innerHTML = `
+    <button class="position-button">0</button>
+    <div class="avatar-wrapper"><img class="avatar" src="${player.avatar}" alt="avatar"></div>
+    <div class="name-label">${player.name}</div>
+    <div class="bar-wrapper"><div class="bar"></div></div>
+    <span class="points">0 pts</span>
+  `;
+
+  container.appendChild(div);
+}
+
+function reorderBars() {
+  const leaderboard = document.getElementById('leaderboard');
+  const sortedPlayers = Object.entries(players).sort((a, b) => a[1].rank - b[1].rank);
+
+  sortedPlayers.forEach(([id]) => {
+    const bar = document.getElementById(`player-${id}`);
+    if (bar) leaderboard.appendChild(bar);
+  });
+}
+
+function animateBars() {
+  Object.keys(players).forEach(id => {
+    const player = players[id];
+    const div = document.getElementById(`player-${id}`);
+    if (!div) return;
+
+    const bar = div.querySelector('.bar');
+    const pointsEl = div.querySelector('.points');
+    const posBtn = div.querySelector('.position-button');
+
+    bar.style.width = Math.min((player.targetPoints / 10000) * 100, 100) + '%';
+    pointsEl.innerText = Math.floor(player.targetPoints) + ' pts';
+    posBtn.innerText = player.rank + 1;
+
+    div.classList.remove('first', 'second', 'third');
+    if (player.rank === 0) div.classList.add('first');
+    if (player.rank === 1) div.classList.add('second');
+    if (player.rank === 2) div.classList.add('third');
+  });
+}
+
+function parseAvatar(url) {
+  if (!url) return 'asset/default-avatar.gif';
+  if (url.startsWith('ipfs://')) return url.replace('ipfs://', 'https://ipfs.io/ipfs/');
+  return url;
+} 
+
+loadLatestHighlight();
+</script>
+
+</body>
+</html>
