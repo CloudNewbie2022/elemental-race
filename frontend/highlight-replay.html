@@ -105,6 +105,46 @@ let frameDuration = 2000;
 let currentSnapshotIndex = 0;
 let totalFrames = 0;
 
+
+
+/**
+ * Returns only those snapshots whose top-10 IDs differ
+ * from the one immediately before them.
+ */
+ function filterChangedSnapshots(snapshots) {
+  const result = [];
+  let lastTopIds = null;
+
+  snapshots.forEach(snap => {
+    // adjust to grab the same data shape you use elsewhere:
+    const list = snap.data?.leaderboard || snap.leaderboard;
+    const topIds = list
+      .sort((a,b) => b.masterpiecePoints - a.masterpiecePoints)
+      .slice(0, 10)
+      .map(p => p.profile.id || p.profile.displayName);
+
+    // always keep the very first frame
+    if (!lastTopIds || !arraysEqual(topIds, lastTopIds)) {
+      result.push(snap);
+      lastTopIds = topIds;
+    }
+  });
+
+  return result;
+}
+
+/** simple array equality for primitive values */
+function arraysEqual(a, b) {
+  return (
+    Array.isArray(a) && Array.isArray(b) &&
+    a.length === b.length &&
+    a.every((v,i) => v === b[i])
+  );
+}
+
+
+
+
 async function loadLatestHighlight() {
   const res = await fetch('http://localhost:8080/api/latest-highlight-id');
   const data = await res.json();
@@ -114,6 +154,12 @@ async function loadLatestHighlight() {
 async function loadSnapshots(masterpieceId) {
   const res = await fetch(`http://localhost:8080/api/highlight-snapshots/${masterpieceId}`);
   let allShots = await res.json();
+  
+  
+  allShots = filterChangedSnapshots(allShots);
+  
+  
+  
   if (allShots.length > 20) {
     snapshots = allShots.slice(-20); // Keep last 20 frames max
   } else {

@@ -1,9 +1,22 @@
+
+
+
 // Required modules
 const express = require('express');
 const fetch = require('node-fetch');
 const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
+
+
+
+// ──────────────────────────────────────────────
+// Setup our “history” folder constant **before** we ever use it
+// ──────────────────────────────────────────────
+const HISTORY_DIR = path.join(__dirname, 'highlight-history');
+if (!fs.existsSync(HISTORY_DIR)) fs.mkdirSync(HISTORY_DIR);
+
+
 
 // Express app setup
 const app = express();
@@ -17,6 +30,7 @@ const HIGHLIGHT_DIR = path.join(__dirname, 'highlights');
 if (!fs.existsSync(SNAPSHOT_DIR)) fs.mkdirSync(SNAPSHOT_DIR);
 if (!fs.existsSync(HIGHLIGHT_DIR)) fs.mkdirSync(HIGHLIGHT_DIR);
 
+
 // Middleware
 app.use(express.json());
 app.use(cors({
@@ -25,6 +39,39 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Accept', 'X-Requested-With', 'Authorization']
 }));
 
+
+// ──────────────────────────────────────────────
+// Highlight-History API (must be **after** express() + middleware)
+// ──────────────────────────────────────────────
+
+
+// 1) list every past run
+app.get('/api/history', (req, res) => {
+  const runs = fs.readdirSync(HISTORY_DIR)
+    .filter(name => fs.statSync(path.join(HISTORY_DIR, name)).isDirectory())
+    .sort((a, b) => b - a)                    // newest first
+    .map(id => ({ id, timestamp: new Date(+id) }));
+  res.json(runs);
+});
+
+// 2) fetch the snapshots for one run
+app.get('/api/history/:id', (req, res) => {
+  const runDir    = path.join(HISTORY_DIR, req.params.id);
+  const manifest  = path.join(runDir, 'replay.json');
+  if (!fs.existsSync(manifest)) {
+    return res.status(404).json({ error: 'Run not found' });
+  }
+  // load the file list and then each highlight
+  const files = JSON.parse(fs.readFileSync(manifest, 'utf8'));
+  const snaps = files.map(f =>
+    JSON.parse(fs.readFileSync(path.join(__dirname, 'highlights', f), 'utf8'))
+  );
+  res.json(snaps);
+});
+
+
+
+
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   if (req.body && Object.keys(req.body).length) {
@@ -32,6 +79,9 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+
+
 
 app.options('/graphql', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');

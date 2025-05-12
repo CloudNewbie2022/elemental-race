@@ -547,6 +547,24 @@ input:checked + .button .light {
     <span class="bar bar2"></span>
   </button>
 
+
+
+
+  <nav>
+    <button id="live-tab">Live Highlight</button>
+    <button id="history-tab">History</button>
+  </nav>
+  <div id="live-view">
+    <!-- existing #leaderboard & replay button -->
+  </div>
+  <div id="history-view" style="display:none;">
+    <ul id="history-list"></ul>
+    <div id="leaderboard-history"></div>
+    <button id="replay-history-btn" style="display:none;" onclick="startRace('leaderboard-history')">🔁 Replay Selected</button>
+  </div>
+
+
+
   <script>
     let lastLeaderboardHash = null;
     let lastPlayerRanks = {};
@@ -825,4 +843,50 @@ input:checked + .button .light {
         else audio.pause();
       });
     });
+
+
+    document.getElementById('live-tab').addEventListener('click', () => {
+    document.getElementById('live-view').style.display = 'block';
+    document.getElementById('history-view').style.display = 'none';
+});
+
+
+    document.getElementById('history-tab').addEventListener('click', async () => {
+    document.getElementById('live-view').style.display = 'none';
+    document.getElementById('history-view').style.display = 'block';
+    const res = await fetch('/api/history');
+    const runs = await res.json();
+    const list = document.getElementById('history-list');
+    list.innerHTML = '';
+    runs.forEach(run => {
+    const li = document.createElement('li');
+    li.textContent = new Date(run.timestamp).toLocaleString();
+    li.addEventListener('click', () => loadHistoryRun(run.id));
+    list.appendChild(li);
+  });
+});
+
+
+
+
+async function loadHistoryRun(id) {
+  const res = await fetch(`/api/history/${id}`);
+  snapshots = await res.json();
+  totalFrames = snapshots.length;
+  document.getElementById('replay-history-btn').style.display = 'inline-block';
+}
+
+// Update your startRace function signature to accept an optional container
+function startRace(containerId = 'leaderboard') {
+  const container = document.getElementById(containerId);
+  players = {};
+  container.innerHTML = '';
+  document.getElementById('replay-btn')?.style.setProperty('display', 'none');
+  document.getElementById('replay-history-btn')?.style.setProperty('display', 'none');
+  currentSnapshotIndex = 0;
+  updateFromSnapshot(snapshots[currentSnapshotIndex], container);
+  animateNextFrame(container);
+}
+
+
   </script>
