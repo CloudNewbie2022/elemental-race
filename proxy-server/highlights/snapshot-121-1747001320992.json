@@ -1,0 +1,17 @@
+{
+  "masterpieceId": "121",
+  "highlights": [
+    {
+      "name": "SamuraiX",
+      "from": 10,
+      "to": 9,
+      "change": 1
+    },
+    {
+      "name": "Milky",
+      "from": 9,
+      "to": 10,
+      "change": -1
+    }
+  ]
+}
