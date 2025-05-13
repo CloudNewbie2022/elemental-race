@@ -1,10 +1,10 @@
-// sync-highlight.js
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs');
 
-const MP_ID = '121'; // <-- can loop over many later
-const SNAPSHOT_DIR = path.join(__dirname, 'highlight-history', 'snapshots');
-const HIGHLIGHT_DIR = path.join(__dirname, 'highlight-history', 'highlights');
+const MP_ID = '121'; // Still locked to mp121 for now
+
+const SNAPSHOT_DIR = path.join(__dirname, 'elemental-race', 'highlight-history', 'snapshots');
+const HIGHLIGHT_DIR = path.join(__dirname, 'elemental-race', 'highlight-history', 'highlights');
 const LATEST_JSON_PATH = path.join(HIGHLIGHT_DIR, 'latest.json');
 
 
