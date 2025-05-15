@@ -1,12 +1,14 @@
 
 
-
 // Required modules
 const express = require('express');
 const fetch = require('node-fetch');
 const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
+
+
+
 
 
 
@@ -29,6 +31,16 @@ const HIGHLIGHT_DIR = path.join(__dirname, 'highlights');
 // Ensure folders exist
 if (!fs.existsSync(SNAPSHOT_DIR)) fs.mkdirSync(SNAPSHOT_DIR);
 if (!fs.existsSync(HIGHLIGHT_DIR)) fs.mkdirSync(HIGHLIGHT_DIR);
+
+//import edit 
+
+
+const allFiles = fs.readdirSync(SNAPSHOT_DIR).filter(f => f.endsWith('.json'));
+const latestFile = allFiles.sort().reverse()[0];
+const MP_ID = latestFile?.split('-')[1] || '121';
+const LATEST_JSON_PATH = path.join(HISTORY_DIR, 'latest.json');
+
+
 
 
 // Middleware
@@ -70,6 +82,10 @@ app.get('/api/history/:id', (req, res) => {
 });
 
 
+app.get('/api/status', (req, res) => {
+  res.json({ ok: true, time: new Date().toISOString() });
+});
+
 
 
 app.use((req, res, next) => {
@@ -90,9 +106,104 @@ app.options('/graphql', (req, res) => {
   res.status(200).send();
 });
 
+
+
+
+//import
+
+
+// <<< HELPERS >>>
+function arraysEqual(a, b) {
+  return Array.isArray(a) && Array.isArray(b) &&
+    a.length === b.length &&
+    a.every((v, i) => v === b[i]);
+}
+
+function getTop10Ids(snapshot) {
+  const leaderboard = snapshot.data?.leaderboard || snapshot.leaderboard || [];
+  return leaderboard
+    .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
+    .slice(0, 10)
+    .map(p => p.profile?.id || p.profile?.displayName || 'unknown');
+}
+
+// <<< CORE WORKFLOW >>>
+function filterMeaningfulChanges(snapshots) {
+  const result = [];
+  let lastTop = null;
+
+  snapshots.forEach(snap => {
+    const topIds = getTop10Ids(snap);
+    if (!lastTop || !arraysEqual(topIds, lastTop)) {
+      result.push(snap);
+      lastTop = topIds;
+    }
+  });
+
+  return result;
+}
+
+
+
+
+
+function syncHighlight() {
+  // Read and sort snapshot files
+  const files = fs.readdirSync(SNAPSHOT_DIR)
+    .filter(f => f.includes(`snapshot-${MP_ID}-`) && f.endsWith('.json'))
+    .sort();
+
+  // Parse each snapshot JSON
+  const snapshots = files.map(f => {
+    const fullPath = path.join(SNAPSHOT_DIR, f);
+    const raw = fs.readFileSync(fullPath, 'utf8');
+    const data = JSON.parse(raw);
+    // If no timestamp in data, use file's last modified time
+    data.timestamp = data.timestamp || fs.statSync(fullPath).mtimeMs;
+    return data;
+  });
+
+  // Filter for meaningful leaderboard changes
+  const highlightFrames = filterMeaningfulChanges(snapshots);
+
+  // Write the highlight history
+  // <<< OUTPUT HIGHLIGHT FILE >>>
+  const outFile = path.join(HIGHLIGHT_DIR, `mp${MP_ID}.json`);
+  fs.writeFileSync(outFile, JSON.stringify(highlightFrames, null, 2), 'utf8');
+  console.log(`✅ Highlight generated: ${outFile} (${highlightFrames.length} frames)`);
+
+  // Write the latest pointer
+  // <<< UPDATE LATEST.JSON >>>
+  const latestPayload = {
+    masterpieceId: `mp${MP_ID}`,
+    updated: new Date().toISOString()
+  };
+  fs.writeFileSync(LATEST_JSON_PATH, JSON.stringify(latestPayload, null, 2), 'utf8');
+  console.log(`📌 Updated latest.json at ${LATEST_JSON_PATH}`);
+}
+
+// Run the sync process
+syncHighlight();
+
+
+//end of syncHighlight
+
+
+
+
+
+
+
+
 // Static files
 app.use('/asset', express.static(path.join(__dirname, 'asset')));
 app.use('/static', express.static(path.join(__dirname, 'asset')));
+app.use('/highlight-history', express.static(path.join(__dirname, 'highlight-history')));
+
+app.use('/snapshots', express.static(path.join(__dirname, 'snapshots')));
+app.use('/highlights', express.static(path.join(__dirname, 'highlights')));
+
+
 
 // --- Smart Snapshot Management ---
 let currentInterval = null;
@@ -145,6 +256,10 @@ async function fetchAndSaveLatestMasterpiece() {
 
     console.log(`📸 Saving snapshot for masterpiece ID: ${masterpiece.id}`);
     saveSnapshot(masterpiece.id, masterpiece.leaderboard);
+    syncHighlight(); // ✅ Auto-sync highlights and update latest.json
+
+
+
 
     const allFiles = fs
       .readdirSync(SNAPSHOT_DIR)
@@ -424,3 +539,4 @@ app.listen(PORT, () => {
 
 // 🚀 Start dynamic snapshots
 setSnapshotInterval(10 * 60 * 1000); // Start slow at 10 minutes
+setInterval(syncHighlight, 60 * 1000); // Optional fallback
