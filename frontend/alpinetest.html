@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simple Alpine.js Leaderboard</title>
+  <!-- Alpine.js v3 -->
+  <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body x-data="leaderboard()">
+
+  <h1>Leaderboard</h1>
+
+  <!-- Leaderboard list for current “time” -->
+  <ul>
+    <template x-for="player in timeline[time] || []" :key="player.name">
+      <li>
+        <strong x-text="player.name"></strong>: 
+        <span x-text="player.score"></span> pts
+      </li>
+    </template>
+  </ul>
+
+  <!-- Controls -->
+  <div style="margin-top:1em;">
+    <button @click="prev()" :disabled="time === 0">Prev</button>
+    <button @click="next()" :disabled="time >= timeline.length - 1">Next</button>
+    <button @click="reset()">Reset</button>
+    <span style="margin-left:1em;">Frame: <span x-text="time"></span> / <span x-text="timeline.length - 1"></span></span>
+  </div>
+
+  <script>
+    function leaderboard() {
+      return {
+        // Replace these with real snapshots later
+        timeline: [
+          [ {name: 'Alice', score: 300}, {name: 'Bob', score: 250} ],
+          [ {name: 'Bob', score: 320},   {name: 'Alice', score: 300} ],
+          [ {name: 'Carol', score: 400},{name: 'Bob', score: 320}  ],
+        ],
+        time: 0,
+
+        next() {
+          if (this.time < this.timeline.length - 1) {
+            this.time++
+          }
+        },
+        prev() {
+          if (this.time > 0) {
+            this.time--
+          }
+        },
+        reset() {
+          this.time = 0
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>
