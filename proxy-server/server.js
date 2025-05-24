@@ -423,4 +423,4 @@ app.listen(PORT, () => {
 });
 
 // 🚀 Start dynamic snapshots
-setSnapshotInterval(2 * 60 * 1000); // Start slow at 10 minutes
+setSnapshotInterval(2 * 5 * 1000); // Start slow at 10 minutes
