@@ -37,7 +37,7 @@ if (!fs.existsSync(HIGHLIGHT_DIR)) fs.mkdirSync(HIGHLIGHT_DIR);
 
 const allFiles = fs.readdirSync(SNAPSHOT_DIR).filter(f => f.endsWith('.json'));
 const latestFile = allFiles.sort().reverse()[0];
-const MP_ID = latestFile?.split('-')[1] || '121';
+const MP_ID = latestFile?.split('-')[1] || '122';
 const LATEST_JSON_PATH = path.join(HISTORY_DIR, 'latest.json');
 
 
@@ -51,6 +51,43 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Accept', 'X-Requested-With', 'Authorization']
 }));
 
+
+//import 3
+
+
+
+// Helper: extract the top-10 IDs (or names) from a snapshot
+function getTop10Ids(snapshot) {
+  const board = snapshot.data?.leaderboard || snapshot.leaderboard || [];
+  return board
+    .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
+    .slice(0, 10)
+    .map(p => p.profile?.id || p.profile?.displayName);
+}
+
+// Helper: only keep snapshots whose top-10 differ from the previous
+function filterMeaningfulChanges(snapshots) {
+  const filtered = [];
+  let lastTop = null;
+
+  snapshots.forEach(snap => {
+    const topIds = getTop10Ids(snap);
+    if (!lastTop || topIds.join() !== lastTop.join()) {
+      filtered.push(snap);
+      lastTop = topIds;
+    }
+  });
+
+  return filtered;
+}
+
+
+
+//import two 
+
+// Serve static frontend files (like testingalpine.html)
+const FRONTEND_DIR = path.join(__dirname, '../frontend');
+app.use(express.static(FRONTEND_DIR));
 
 // ──────────────────────────────────────────────
 // Highlight-History API (must be **after** express() + middleware)
@@ -112,36 +149,81 @@ app.options('/graphql', (req, res) => {
 //import
 
 
-// <<< HELPERS >>>
-function arraysEqual(a, b) {
-  return Array.isArray(a) && Array.isArray(b) &&
-    a.length === b.length &&
-    a.every((v, i) => v === b[i]);
-}
 
-function getTop10Ids(snapshot) {
-  const leaderboard = snapshot.data?.leaderboard || snapshot.leaderboard || [];
-  return leaderboard
+
+// if (meaningful.length === 0) {
+  // return res
+   // .status(404)
+    //.json({ error: 'No meaningful snapshots for MP121' });
+// }
+
+
+
+
+// Add this route to return all snapshot frames for MP121
+app.get('/api/highlight-snapshots/121', async (req, res) => {
+  try {
+    const dir = path.join(__dirname, 'snapshots');
+    const files = (await fs.promises.readdir(dir))
+      .filter(f => f.startsWith('snapshot-121-') && f.endsWith('.json'))
+      .sort();
+
+    // load & parse each snapshot
+    const snaps = await Promise.all(
+      files.map(f =>
+        fs.promises.readFile(path.join(dir, f), 'utf8')
+          .then(raw => JSON.parse(raw))
+      )
+    );
+
+    // filter out consecutive duplicates
+    const meaningful = filterMeaningfulChanges(snaps);
+
+    if (!meaningful.length) {
+      return res.status(404).json({ error: 'No meaningful snapshots for MP121' });
+    }
+
+    res.json(meaningful);
+  } catch (err) {
+    console.error('❌ Error reading MP121 snapshots:', err);
+    res.status(500).json({ error: 'Failed to load snapshots' });
+  }
+});
+
+
+
+
+// <<< HELPERS >>>
+// Helper: grab the Top 10 entries (in order) as a simple array of { id, points }
+function getTop10Frame(snapshot) {
+  const board = snapshot.data?.leaderboard || snapshot.leaderboard || [];
+  return board
     .sort((a, b) => b.masterpiecePoints - a.masterpiecePoints)
     .slice(0, 10)
-    .map(p => p.profile?.id || p.profile?.displayName || 'unknown');
+    .map(p => ({
+      id: p.profile?.id || p.profile?.displayName,
+      points: p.masterpiecePoints
+    }));
 }
 
-// <<< CORE WORKFLOW >>>
+// Helper: only keep snapshots whose Top 10 (id+points) differ from the previous
 function filterMeaningfulChanges(snapshots) {
-  const result = [];
-  let lastTop = null;
+  if (!Array.isArray(snapshots)) return [];
+  const filtered = [];
+  let lastFrame = null;
 
   snapshots.forEach(snap => {
-    const topIds = getTop10Ids(snap);
-    if (!lastTop || !arraysEqual(topIds, lastTop)) {
-      result.push(snap);
-      lastTop = topIds;
+    const frame = getTop10Frame(snap);
+    const key = JSON.stringify(frame);
+    if (key !== lastFrame) {
+      filtered.push(snap);
+      lastFrame = key;
     }
   });
 
-  return result;
+  return filtered;
 }
+
 
 
 
@@ -157,11 +239,22 @@ function syncHighlight() {
   const snapshots = files.map(f => {
     const fullPath = path.join(SNAPSHOT_DIR, f);
     const raw = fs.readFileSync(fullPath, 'utf8');
+
+ try {
+    const data = JSON.parse(raw);
+    data.timestamp = data.timestamp || fs.statSync(fullPath).mtimeMs;
+    return data;
+  } catch (err) {
+    console.warn(`⚠️ Skipping corrupted snapshot file: ${f}`);
+    return null;
+  }
+}).filter(Boolean); // Remove nulls
+
     const data = JSON.parse(raw);
     // If no timestamp in data, use file's last modified time
     data.timestamp = data.timestamp || fs.statSync(fullPath).mtimeMs;
     return data;
-  });
+  };
 
   // Filter for meaningful leaderboard changes
   const highlightFrames = filterMeaningfulChanges(snapshots);
@@ -180,7 +273,7 @@ function syncHighlight() {
   };
   fs.writeFileSync(LATEST_JSON_PATH, JSON.stringify(latestPayload, null, 2), 'utf8');
   console.log(`📌 Updated latest.json at ${LATEST_JSON_PATH}`);
-}
+
 
 // Run the sync process
 syncHighlight();
@@ -500,37 +593,31 @@ app.get('/api/latest-highlight-id', async (req, res) => {
 });
 
 // --- API to Get All Highlight Snapshots for a Masterpiece ---
-app.get('/api/highlight-snapshots/:masterpieceId', async (req, res) => {
-  const masterpieceId = req.params.masterpieceId;
-
+app.get('/api/highlight-snapshots/121', async (req, res) => {
   try {
-    const files = await fs.promises.readdir(HIGHLIGHT_DIR);
+    const files = (await fs.promises.readdir(SNAPSHOT_DIR))
+      .filter(f => f.startsWith('snapshot-121-') && f.endsWith('.json'))
+      .sort();
 
-    const matchingFiles = files
-      .filter(file => file.startsWith(`snapshot-${masterpieceId}-`) && file.endsWith('.json'))
-      .sort(); // sort snapshots by filename/time
+    const snaps = await Promise.all(
+      files.map(f => fs.promises.readFile(
+        path.join(SNAPSHOT_DIR, f), 'utf8'
+      ).then(JSON.parse))
+    );
 
-    if (matchingFiles.length === 0) {
-      return res.status(404).json({ error: 'No highlight snapshots found for this masterpiece.' });
+    const meaningful = filterMeaningfulChanges(snaps);
+
+    if (!meaningful.length) {
+      return res.status(404).json({ error: 'No meaningful snapshots for MP121' });
     }
 
-    const snapshotPromises = matchingFiles.map(filename => {
-      const filepath = path.join(HIGHLIGHT_DIR, filename);
-      return fs.promises.readFile(filepath, 'utf-8').then(content => ({
-        filename,
-        data: JSON.parse(content)
-      }));
-    });
-
-    const snapshots = await Promise.all(snapshotPromises);
-
-    res.json(snapshots);
-
+    res.json(meaningful);
   } catch (err) {
-    console.error('❌ Error loading highlight snapshots:', err);
-    res.status(500).json({ error: 'Failed to load highlight snapshots.' });
+    console.error('❌ Error reading MP121 snapshots:', err);
+    res.status(500).json({ error: 'Failed to load snapshots' });
   }
 });
+
 
 // --- Start Server ---
 app.listen(PORT, () => {

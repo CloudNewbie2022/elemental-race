@@ -6,6 +6,8 @@
   <title>Angry Dynomites Leaderboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
 
   
@@ -514,9 +516,56 @@ input:checked + .button .light {
     <div class="loader"></div>  </div>
 
   <h1 style="text-align:center; color:#f39c12; margin-bottom: 30px;">Angry Dynomites Leaderboard</h1>
+<div 
+  x-data="leaderboard()" 
+  x-init="load(); setInterval(load, 30000);" 
+  class="leaderboard-container space-y-4"
+  id="leaderboard"
+>
+  <template x-for="(player, index) in players" :key="index">
+    <div>
+      <!-- 🧍 Player Row -->
+      <div 
+        class="player-bar hoverable transition-transform duration-300 relative" 
+        :class="rankClass(index)" 
+        :style="{ animationDelay: `${index * 0.3}s` }"
+        @click="expanded = expanded === index ? null : index"
+        @mouseenter="hovered = index" 
+        @mouseleave="hovered = null"
+      >
+        <!-- Avatar -->
+        <div class="avatar-wrapper">
+          <img class="avatar" :src="resolveAvatar(player.profile.avatarUrl)" alt="avatar" />
+        </div>
 
-  <!-- 🥇 Leaderboard Container -->
-  <div class="leaderboard-container" id="leaderboard"></div>
+        <!-- Label -->
+        <div class="label" x-text="`${player.profile.displayName} (${player.masterpiecePoints} pts)`"></div>
+
+        <!-- Bar -->
+        <div class="bar-wrapper">
+          <div class="bar" 
+            :style="`width: 100%; background-image: url('${resolveAvatar(player.profile.avatarUrl)}'); background-size: cover; background-repeat: repeat-x; animation: scrollBackground 20s linear infinite;`"
+          >
+            <img class="bar-gif" src="asset/generative-art=2.gif" />
+          </div>
+        </div>
+
+        <!-- Lever (decorative only) -->
+        <img class="lever" src="asset/wood_lever.png" style="height: 60px;" />
+      </div>
+
+      <!-- 🔽 Drawer -->
+      <div 
+        class="drawer" 
+        x-show="expanded === index" 
+        x-transition 
+        style="background: #222; color: white; padding: 1rem; border-radius: 0 0 8px 8px;"
+      >
+        <strong x-text="player.profile.displayName"></strong>'s secret stats or bonus info here...
+      </div>
+    </div>
+  </template>
+</div>
 
   <button id="refresh-btn" style="margin-top: 2rem;">🔁 Refresh Leaderboard</button>
 
@@ -934,6 +983,31 @@ function startRace(containerId = 'leaderboard') {
   updateFromSnapshot(snapshots[currentSnapshotIndex], container);
   animateNextFrame(container);
 }
+
+
+  function leaderboard() {
+    return {
+      players: [],
+      hovered: null,
+      expanded: null,
+      load() {
+        fetch('/api/leaderboard')
+          .then(res => res.json())
+          .then(data => this.players = data)
+          .catch(err => console.error('❌ Fetch failed:', err));
+      },
+      resolveAvatar(url) {
+        if (!url) return 'asset/default-avatar.gif';
+        if (url.startsWith('ipfs://')) return url.replace('ipfs://', 'https://ipfs.io/ipfs/');
+        return url;
+      },
+      rankClass(index) {
+        return index === 0 ? 'first' : index === 1 ? 'second' : index === 2 ? 'third' : '';
+      }
+    }
+  }
+
+
 
 
   </script>
