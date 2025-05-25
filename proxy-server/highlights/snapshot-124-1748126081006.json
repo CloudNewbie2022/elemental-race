@@ -1,0 +1,23 @@
+{
+  "masterpieceId": "124",
+  "highlights": [
+    {
+      "name": "DMOONEY",
+      "from": 8,
+      "to": 6,
+      "change": 2
+    },
+    {
+      "name": "MrN",
+      "from": 6,
+      "to": 7,
+      "change": -1
+    },
+    {
+      "name": "roderzo",
+      "from": 7,
+      "to": 8,
+      "change": -1
+    }
+  ]
+}

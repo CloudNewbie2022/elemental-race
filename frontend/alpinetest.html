@@ -2,19 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Simple Alpine.js Leaderboard</title>
+  <title>Dynamic Alpine.js Leaderboard</title>
   <!-- Alpine.js v3 -->
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
-<body x-data="leaderboard()">
+<body 
+  x-data="leaderboard()" 
+  x-init="init()"
+>
 
-  <h1>Leaderboard</h1>
+  <h1 x-text="masterpieceName || 'Leaderboard'"></h1>
 
   <!-- Leaderboard list for current “time” -->
   <ul>
     <template x-for="player in timeline[time] || []" :key="player.name">
       <li>
-        <strong x-text="player.name"></strong>: 
+        <strong x-text="player.name"></strong>:
         <span x-text="player.score"></span> pts
       </li>
     </template>
@@ -25,29 +28,43 @@
     <button @click="prev()" :disabled="time === 0">Prev</button>
     <button @click="next()" :disabled="time >= timeline.length - 1">Next</button>
     <button @click="reset()">Reset</button>
-    <span style="margin-left:1em;">Frame: <span x-text="time"></span> / <span x-text="timeline.length - 1"></span></span>
+    <span style="margin-left:1em;">
+      Frame: <span x-text="time"></span> / <span x-text="timeline.length - 1"></span>
+    </span>
   </div>
 
   <script>
     function leaderboard() {
       return {
-        // Replace these with real snapshots later
-        timeline: [
-          [ {name: 'Alice', score: 300}, {name: 'Bob', score: 250} ],
-          [ {name: 'Bob', score: 320},   {name: 'Alice', score: 300} ],
-          [ {name: 'Carol', score: 400},{name: 'Bob', score: 320}  ],
-        ],
+        masterpieceName: null,
+        timeline: [],    // will be an array of [ {name,score}… ]
         time: 0,
 
-        next() {
-          if (this.time < this.timeline.length - 1) {
-            this.time++
+        async init() {
+          try {
+            const res = await fetch('/api/latest-snapshots')
+            const snapshots = await res.json()
+            // snapshots is [ { filename, data: { leaderboard: […] } }, … ]
+            this.timeline = snapshots.map(item =>
+              item.data.leaderboard.map(p => ({
+                name: p.profile.displayName,
+                score: p.masterpiecePoints
+              }))
+            )
+            // Optionally grab the name from the latest snapshot
+            if (snapshots.length && snapshots[0].data.masterpiece) {
+              this.masterpieceName = snapshots[0].data.masterpiece.name
+            }
+          } catch (e) {
+            console.error('Failed to load snapshots', e)
           }
         },
+
+        next() {
+          if (this.time < this.timeline.length - 1) this.time++
+        },
         prev() {
-          if (this.time > 0) {
-            this.time--
-          }
+          if (this.time > 0) this.time--
         },
         reset() {
           this.time = 0
