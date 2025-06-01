@@ -42,7 +42,7 @@
 
         async init() {
           try {
-            const res = await fetch('/api/latest-snapshots')
+            const res = await fetch('/api/snapshots')
             const snapshots = await res.json()
             // snapshots is [ { filename, data: { leaderboard: […] } }, … ]
             this.timeline = snapshots.map(item =>
